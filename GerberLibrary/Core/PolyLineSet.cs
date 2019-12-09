@@ -25,7 +25,7 @@ namespace GerberLibrary
             string r = "";
             foreach (var a in Vertices)
                 r += a.ToString() + "  ";
-            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, Vertices[0], Vertices[1], Vertices[Vertices.Count()-2], Vertices[Vertices.Count() - 1] );
+            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, Vertices[0], Vertices[1], Vertices[Vertices.Count-2], Vertices[Vertices.Count - 1] );
         }
     }
     public class GerberParserState
@@ -172,7 +172,7 @@ namespace GerberLibrary
                 var L = Buckets[i];
                 double bucketangle = i * 360.0 / 8.0;
                 var sorted = from ii in L orderby (ii.ProjectedDistanceToCenter / ii.Length) descending select ii;
-                if (sorted.Count() > 0)
+                if (sorted.Any())
                 {
                     var f = sorted.First();
                     BucketItems.Add(f);
@@ -534,7 +534,7 @@ namespace GerberLibrary
                 {
                     T = T.Substring(1, T.Length - 2);
                     var s = T.Split('*');
-                    if (s.Count() > 1)
+                    if (s.Length > 1)
                     {
                         foreach (var sl in s)
                         {
@@ -752,7 +752,7 @@ namespace GerberLibrary
                                     GB.Lines.Add(part.Trim());
                                 }
                             }
-                            if (slres.Count() > 0)
+                            if (slres.Count > 0)
                             {
                                 slres[0] = "%" + slres[0];
                                 for (int i = 1; i < slres.Count; i++)
@@ -767,7 +767,7 @@ namespace GerberLibrary
                                         }
                                     }
                                 }
-                                slres[slres.Count() - 1] += "%";
+                                slres[slres.Count - 1] += "%";
                                 lines.AddRange(slres);
                             }
                             Blocks.Add(GB);
@@ -836,7 +836,7 @@ namespace GerberLibrary
                     }
                 }
             }
-            for (int i = 0; i < lines.Count(); i++)
+            for (int i = 0; i < lines.Count; i++)
             {
                 lines[i] = lines[i].Replace(" ", "");
             }
@@ -1013,8 +1013,8 @@ namespace GerberLibrary
 
         private static void DoRepeating(GerberParserState State)
         {
-            int LastThin = State.NewThinShapes.Count();
-            int LastShape = State.NewShapes.Count();
+            int LastThin = State.NewThinShapes.Count;
+            int LastShape = State.NewShapes.Count;
             for (int x = 0; x < State.RepeatXCount; x++)
             {
                 for (int y = 0; y < State.RepeatYCount; y++)
@@ -1265,7 +1265,7 @@ namespace GerberLibrary
                                                                                 double W = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]);
                                                                                 double H = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
                                                                                 AT.SetObround(W, H);
-                                                                                if (GCC.numbercommands.Count() > 3)
+                                                                                if (GCC.numbercommands.Count > 3)
                                                                                 {
                                                                                     // TODO: Add Hole Support
                                                                                 }
@@ -1282,7 +1282,7 @@ namespace GerberLibrary
                                                                         string[] macrostrings = mname.Split(',');
 
                                                                         List<string> macroparamstrings = new List<string>();
-                                                                        for (int i = 1; i < macrostrings.Count(); i++)
+                                                                        for (int i = 1; i < macrostrings.Length; i++)
                                                                         {
                                                                             string a = macrostrings[i];
                                                                             string[] macrosubstrings = a.Split('X');
@@ -1379,7 +1379,7 @@ namespace GerberLibrary
 
                                                                 GCodeCommand GCC2 = new GCodeCommand();
                                                                 GCC2.Decode(a, State.CoordinateFormat);
-                                                                if (GCC2.numbercommands.Count() > 0)
+                                                                if (GCC2.numbercommands.Count > 0)
                                                                     switch ((int)GCC2.numbercommands[0])
                                                                     {
                                                                         case 4: // outline
@@ -1893,8 +1893,8 @@ namespace GerberLibrary
             State.RepeatXOff = Xoff;
             State.RepeatYOff = Yoff;
 
-            State.RepeatStartThinShapeIdx = State.NewThinShapes.Count();
-            State.RepeatStartShapeIdx = State.NewShapes.Count();
+            State.RepeatStartThinShapeIdx = State.NewThinShapes.Count;
+            State.RepeatStartShapeIdx = State.NewShapes.Count;
         }
         
         public class GerberBlock

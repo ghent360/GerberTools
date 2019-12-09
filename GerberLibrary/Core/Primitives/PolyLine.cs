@@ -67,7 +67,7 @@ namespace GerberLibrary.Core.Primitives
 
             double LastX = 0;
             double LastY = 0;
-            if (Vertices.Count() > 0)
+            if (Vertices.Any())
             {
                 LastX = Vertices.Last().X;
                 LastY = Vertices.Last().Y;

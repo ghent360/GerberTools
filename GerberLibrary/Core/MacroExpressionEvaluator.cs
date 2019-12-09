@@ -427,7 +427,7 @@ namespace GerberLibrary
 
             public static void PrintTokens(List<Token> Res)
             {
-                for (int i = 0; i < Res.Count(); i++)
+                for (int i = 0; i < Res.Count; i++)
                 {
                     Console.WriteLine("   {0}: {1}", i, Res[i]);
                 }

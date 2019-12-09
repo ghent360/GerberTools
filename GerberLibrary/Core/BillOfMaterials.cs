@@ -61,7 +61,7 @@ namespace GerberLibrary.Core
 
         public string DisplayLine()
         {
-            return RefDes.Count() + " " + Name + " " + Value + " (" + PackageName + ")";
+            return RefDes.Count + " " + Name + " " + Value + " (" + PackageName + ")";
         }
     }
 
@@ -470,7 +470,7 @@ namespace GerberLibrary.Core
             foreach (var l in map)
             {
                 var A = l.Split(' ');
-                if (A.Count() == 2)
+                if (A.Length == 2)
                 {
                     string from = A[0];
                     string to = A[1];
@@ -723,7 +723,7 @@ namespace GerberLibrary.Core
             foreach (var l in map)
             {
                 var A = l.Split(' ');
-                if (A.Count() == 2)
+                if (A.Length == 2)
                 {
                     string from = A[0];
                     string to = A[1];

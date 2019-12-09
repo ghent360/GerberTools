@@ -135,9 +135,9 @@ namespace GerberAnalyse
                     {
                         foreach (ZipEntry e in zip1)
                         {
-                            MemoryStream MS = new MemoryStream();
                             if (e.IsDirectory == false)
                             {
+                                MemoryStream MS = new MemoryStream();
                                 e.Extract(MS);
                                 MS.Seek(0, SeekOrigin.Begin);
                                 TheStats.AddFile(MS, e.FileName);

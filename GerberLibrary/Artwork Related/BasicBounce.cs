@@ -8,7 +8,7 @@ namespace GerberLibrary
     class BasicBounce : GerberLibrary.ArtWork.Functions.BounceInterface
     {
 
-        public override void RD_Bounce(GerberLibrary.ArtWork.Functions.RD_Elem[] FieldA, GerberLibrary.ArtWork.Functions.RD_Elem[] FieldB, int iW, int iH, float feed, float kill, double[] distancefield, float du = 0.2097f, float dv = 0.105f)
+        public override void RDBounce(GerberLibrary.ArtWork.Functions.RDElem[] FieldA, GerberLibrary.ArtWork.Functions.RDElem[] FieldB, int iW, int iH, float feed, float kill, double[] distancefield, float du = 0.2097f, float dv = 0.105f)
         {
             for (int y = 0; y < iH; y++)
             {
@@ -36,7 +36,7 @@ namespace GerberLibrary
             }
         }
 
-        private static void SetF(GerberLibrary.ArtWork.Functions.RD_Elem[] FieldB, int x, int y, int iW, int iH, float p1, float p2)
+        private static void SetF(GerberLibrary.ArtWork.Functions.RDElem[] FieldB, int x, int y, int iW, int iH, float p1, float p2)
         {
             x = (x + iW) % iW;
             y = (y + iH) % iH;
@@ -44,20 +44,20 @@ namespace GerberLibrary
             FieldB[x + y * iW].G = p2;
         }
 
-        static GerberLibrary.ArtWork.Functions.RD_Elem GetF(GerberLibrary.ArtWork.Functions.RD_Elem[] FieldA, int x, int y, int iW, int iH)
+        static GerberLibrary.ArtWork.Functions.RDElem GetF(GerberLibrary.ArtWork.Functions.RDElem[] FieldA, int x, int y, int iW, int iH)
         {
             x = (x + iW) % iW;
             y = (y + iH) % iH;
             return FieldA[x + y * iW];
         }
 
-        public override void BounceN(int p, GerberLibrary.ArtWork.Functions.RD_Elem[] FieldA, GerberLibrary.ArtWork.Functions.RD_Elem[] FieldB, int iW, int iH, float feedrate, float killrate, double[] DistanceFieldBlur)
+        public override void BounceN(int p, GerberLibrary.ArtWork.Functions.RDElem[] FieldA, GerberLibrary.ArtWork.Functions.RDElem[] FieldB, int iW, int iH, float feedrate, float killrate, double[] DistanceFieldBlur)
         {
 
             for (int i = 0; i < p / 2; i++)
             {
-                RD_Bounce(FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
-                RD_Bounce(FieldB, FieldA, iW, iH, feedrate, killrate, DistanceFieldBlur);
+                RDBounce(FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
+                RDBounce(FieldB, FieldA, iW, iH, feedrate, killrate, DistanceFieldBlur);
             }
 
 

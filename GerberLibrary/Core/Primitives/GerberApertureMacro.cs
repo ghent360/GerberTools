@@ -28,7 +28,7 @@ namespace GerberLibrary.Core.Primitives
 
             GAT.Shape.Vertices.Clear();
             if (Gerber.ShowProgress) Console.WriteLine("Building aperture for macro {1}  with {0} parts", Parts.Count, Name);
-            for (int i = 0; i < Parts.Count(); i++)
+            for (int i = 0; i < Parts.Count; i++)
             {
                 var part = Parts[i];
                 var Part = part.BuildAperture(paramlist, GNF);

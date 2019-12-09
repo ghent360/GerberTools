@@ -503,16 +503,16 @@ namespace GerberLibrary.Core.Primitives
             GA.NGon((int)Math.Floor(10 * Math.Max(2.0, p)), 1, 0, 0);
             Shape.Vertices.Clear();
 
-            for (int i = 0; i < GA.Shape.Vertices.Count(); i++)
+            for (int i = 0; i < GA.Shape.Vertices.Count; i++)
             {
                 Shape.Vertices.Add(new PointD(Xoff + GA.Shape.Vertices[i].X * (p - (Width / 2)), Yoff + GA.Shape.Vertices[i].Y * (p - (Width / 2))));
             }
             Shape.Vertices.Add(new PointD(Xoff + GA.Shape.Vertices[0].X * (p + (Width / 2)), Yoff + GA.Shape.Vertices[0].Y * (p + (Width / 2))));
-            for (int i = GA.Shape.Vertices.Count() - 1; i >= 0; i--)
+            for (int i = GA.Shape.Vertices.Count - 1; i >= 0; i--)
             {
                 Shape.Vertices.Add(new PointD(Xoff + GA.Shape.Vertices[i].X * (p + (Width / 2)), Yoff + GA.Shape.Vertices[i].Y * (p + (Width / 2))));
             }
-            Shape.Vertices.Add(new PointD(Xoff + GA.Shape.Vertices[GA.Shape.Vertices.Count() - 1].X * (p - (Width / 2)), Yoff + GA.Shape.Vertices[GA.Shape.Vertices.Count() - 1].Y * (p - (Width / 2))));
+            Shape.Vertices.Add(new PointD(Xoff + GA.Shape.Vertices[GA.Shape.Vertices.Count - 1].X * (p - (Width / 2)), Yoff + GA.Shape.Vertices[GA.Shape.Vertices.Count - 1].Y * (p - (Width / 2))));
             Shape.Close();
         }
     }

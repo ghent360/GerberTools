@@ -43,7 +43,7 @@ namespace GerberLibrary.Core
                     {
                         foreach (ZipEntry e in zip1)
                         {
-                            MemoryStream MS = new MemoryStream();
+                            //MemoryStream MS = new MemoryStream();
                             if (e.IsDirectory == false)
                             {
                                 //                              e.Extract(MS);
@@ -74,11 +74,11 @@ namespace GerberLibrary.Core
                     {
                         foreach (ZipEntry e in zip1)
                         {
-                            MemoryStream MS = new MemoryStream();
                             if (e.IsDirectory == false)
                             {
                                 if (Logger != null) Logger.AddString(String.Format("Loading inside zip: {0}", Path.GetFileName(e.FileName)));
 
+                                MemoryStream MS = new MemoryStream();
                                 e.Extract(MS);
                                 MS.Seek(0, SeekOrigin.Begin);
                                 AddFileToSet(MS, e.FileName, Logger);
@@ -88,11 +88,13 @@ namespace GerberLibrary.Core
                 }
                 else
                 {
-                    MemoryStream MS2 = new MemoryStream();
-                    FileStream FS = File.OpenRead(a);
-                    FS.CopyTo(MS2);
-                    MS2.Seek(0, SeekOrigin.Begin);
-                    AddFileToSet(MS2, a, Logger);
+                    using (FileStream FS = File.OpenRead(a))
+                    {
+                        MemoryStream MS2 = new MemoryStream();
+                        FS.CopyTo(MS2);
+                        MS2.Seek(0, SeekOrigin.Begin);
+                        AddFileToSet(MS2, a, Logger);
+                    }
                 }
             }
 
@@ -124,7 +126,14 @@ namespace GerberLibrary.Core
                 //   string[] filesplit = originalfilename.Split('.');
                 //     string ext = filesplit[filesplit.Count() - 1].ToLower();
 
-                var FileType = Gerber.FindFileTypeFromStream(new StreamReader(MS), _originalfilename);
+                BoardFileType FileType;
+                using (MemoryStream copy = new MemoryStream())
+                {
+                    MS.CopyTo(copy);
+                    copy.Seek(0, SeekOrigin.Begin);
+                    using (StreamReader sr = new StreamReader(copy))
+                        FileType = Gerber.FindFileTypeFromStream(sr, _originalfilename);
+                }
                 MS.Seek(0, SeekOrigin.Begin);
 
                 if (FileType == BoardFileType.Unsupported)
@@ -140,11 +149,23 @@ namespace GerberLibrary.Core
                 if (FileType == BoardFileType.Drill)
                 {
                     if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", _originalfilename);
-                    PLS = PolyLineSet.LoadExcellonDrillFileFromStream(new StreamReader(MS), _originalfilename, false, drillscaler);
+                    using (MemoryStream copy = new MemoryStream())
+                    {
+                        MS.CopyTo(copy);
+                        copy.Seek(0, SeekOrigin.Begin);
+                        using (StreamReader sr = new StreamReader(copy))
+                            PLS = PolyLineSet.LoadExcellonDrillFileFromStream(sr, _originalfilename, false, drillscaler);
+                    }
                     MS.Seek(0, SeekOrigin.Begin);
 
                     ExcellonFile EF = new ExcellonFile();
-                    EF.Load(new StreamReader(MS), drillscaler);
+                    using (MemoryStream copy = new MemoryStream())
+                    {
+                        MS.CopyTo(copy);
+                        copy.Seek(0, SeekOrigin.Begin);
+                        using (StreamReader sr = new StreamReader(copy))
+                            EF.Load(sr, drillscaler);
+                    }
                     Excellons.Add(EF);
                 }
                 else
@@ -160,7 +181,13 @@ namespace GerberLibrary.Core
                     }
                     State.PreCombinePolygons = precombinepolygons;
 
-                    PLS = PolyLineSet.LoadGerberFileFromStream(new StreamReader(MS), _originalfilename, forcezerowidth, false, State);
+                    using (MemoryStream copy = new MemoryStream())
+                    {
+                        MS.CopyTo(copy);
+                        copy.Seek(0, SeekOrigin.Begin);
+                        using (StreamReader sr = new StreamReader(copy))
+                            PLS = PolyLineSet.LoadGerberFileFromStream(sr, _originalfilename, forcezerowidth, false, State);
+                    }
                     MS.Seek(0, SeekOrigin.Begin);
 
                     PLS.Side = State.Side;
@@ -693,59 +720,63 @@ namespace GerberLibrary.Core
                 BB.AddPolygons(Offsetted);
                 BB.AddPolyLine(Biggest);
 
-                Bitmap B = new Bitmap((int)((BB.Width() ) * scalefac) + 6, (int)((BB.Height()) * scalefac) +6);
-                Graphics G = Graphics.FromImage(B);
-                G.Clear(Color.Transparent);
-                G.Clear(Color.White);
-
-                G.TranslateTransform(3,3);
-                G.ScaleTransform(scalefac, scalefac);
-                G.TranslateTransform((float)-(BB.TopLeft.X ), (float)-(BB.TopLeft.Y ));
-                Pen pen = new Pen(Color.Black, 0.1f);
-                Pen pen2 = new Pen(Color.FromArgb(160, 160, 160), 0.1f);
-                pen2.DashPattern = new float[2] { 2, 2 };
-                GerberImageCreator.ApplyAASettings(G);
-                RectangleF R = new RectangleF(0, 0, (float)holediameter, (float)holediameter);
-
-                foreach (var a in Holes)
+                using (Bitmap B = new Bitmap((int)((BB.Width()) * scalefac) + 6, (int)((BB.Height()) * scalefac) + 6))
                 {
-                    R.X = (float)a.X - (float)holeradius;
-                    R.Y = (float)a.Y - (float)holeradius;
-                    G.DrawEllipse(pen, R);
-                }
+                    Graphics G = Graphics.FromImage(B);
+                    G.Clear(Color.Transparent);
+                    G.Clear(Color.White);
 
-                foreach (var poly in Offsetted)
-                {
-                    PolyLine Pl = new PolyLine(PolyLine.PolyIDs.Temp);
-
-                    Pl.fromPolygon(poly);
-                    var Points = new List<PointF>(Pl.Vertices.Count);
-                    for (int i = 0; i < Pl.Vertices.Count; i++)
+                    G.TranslateTransform(3, 3);
+                    G.ScaleTransform(scalefac, scalefac);
+                    G.TranslateTransform((float)-(BB.TopLeft.X), (float)-(BB.TopLeft.Y));
+                    using (Pen pen = new Pen(Color.Black, 0.1f))
+                    using (Pen pen2 = new Pen(Color.FromArgb(160, 160, 160), 0.1f))
                     {
-                        Points.Add(Pl.Vertices[i].ToF());
+                        pen2.DashPattern = new float[2] { 2, 2 };
+                        GerberImageCreator.ApplyAASettings(G);
+                        RectangleF R = new RectangleF(0, 0, (float)holediameter, (float)holediameter);
 
+                        foreach (var a in Holes)
+                        {
+                            R.X = (float)a.X - (float)holeradius;
+                            R.Y = (float)a.Y - (float)holeradius;
+                            G.DrawEllipse(pen, R);
+                        }
+
+                        foreach (var poly in Offsetted)
+                        {
+                            PolyLine Pl = new PolyLine(PolyLine.PolyIDs.Temp);
+
+                            Pl.fromPolygon(poly);
+                            var Points = new List<PointF>(Pl.Vertices.Count);
+                            for (int i = 0; i < Pl.Vertices.Count; i++)
+                            {
+                                Points.Add(Pl.Vertices[i].ToF());
+
+                            }
+                            Points.Add(Pl.Vertices[0].ToF());
+                            G.DrawLines(pen, Points.ToArray());
+                        }
+
+                        {
+                            PolyLine Pl = Biggest;
+
+                            var Points = new List<PointF>(Pl.Vertices.Count);
+
+                            for (int i = 0; i < Pl.Vertices.Count; i++)
+                            {
+                                Points.Add(Pl.Vertices[i].ToF());
+                            }
+
+                            Points.Add(Pl.Vertices[0].ToF());
+                            G.DrawLines(pen2, Points.ToArray());
+                        }
+
+                        var ImagePNG = outputfile + ".png";
+                        B.Save(ImagePNG);
+                        return ImagePNG;
                     }
-                    Points.Add(Pl.Vertices[0].ToF());
-                    G.DrawLines(pen, Points.ToArray());
                 }
-
-                {
-                    PolyLine Pl = Biggest;
-
-                    var Points = new List<PointF>(Pl.Vertices.Count);
-
-                    for (int i = 0; i < Pl.Vertices.Count; i++)
-                    {
-                        Points.Add(Pl.Vertices[i].ToF());
-                    }
-
-                    Points.Add(Pl.Vertices[0].ToF());
-                    G.DrawLines(pen2, Points.ToArray());
-                }
-
-                var ImagePNG = outputfile + ".png";
-                B.Save(ImagePNG);
-                return ImagePNG;
             }
         }        
     }

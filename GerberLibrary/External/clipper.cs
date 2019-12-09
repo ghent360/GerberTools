@@ -1225,7 +1225,7 @@ namespace ClipperLib
         }
         //------------------------------------------------------------------------------
 
-        private void DisposeOutPts(OutPt pp)
+        private static void DisposeOutPts(OutPt pp)
         {
             if (pp == null) return;
             OutPt tmpPp = null;
@@ -2880,7 +2880,7 @@ namespace ClipperLib
         }
         //------------------------------------------------------------------------------
 
-        private int PointCount(OutPt pts)
+        private static int PointCount(OutPt pts)
         {
             if (pts == null) return 0;
             int result = 0;

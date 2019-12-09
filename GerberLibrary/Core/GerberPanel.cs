@@ -131,9 +131,9 @@ namespace GerberLibrary
             {
                 foreach (ZipEntry e in zip1)
                 {
-                    MemoryStream MS = new MemoryStream();
                     if (e.IsDirectory == false)
                     {
+                        MemoryStream MS = new MemoryStream();
                         e.Extract(MS);
                         MS.Seek(0, SeekOrigin.Begin);
                         Files[e.FileName] = MS;
@@ -156,24 +156,32 @@ namespace GerberLibrary
                 BoardSide BS = BoardSide.Unknown;
                 BoardLayer BL = BoardLayer.Unknown;
                 Files[F].Seek(0, SeekOrigin.Begin);
-                if (Gerber.FindFileTypeFromStream(new StreamReader(Files[F]), F) == BoardFileType.Gerber)
+                using (MemoryStream copy = new MemoryStream())
                 {
-                    Gerber.DetermineBoardSideAndLayer(F, out BS, out BL);
-                    if (BS == BoardSide.Both && BL == BoardLayer.Outline)
+                    Files[F].CopyTo(copy);
+                    copy.Seek(0, SeekOrigin.Begin);
+                    using (StreamReader sr = new StreamReader(copy))
                     {
-                        outlinefiles.Add(F);
-                    }
-                    else
-                    {
-                        if (BS == BoardSide.Both && BL == BoardLayer.Mill)
+                        if (Gerber.FindFileTypeFromStream(sr, F) == BoardFileType.Gerber)
                         {
-                            millfiles.Add(F);
-                        }
-                        else
-                        {
-                            if (BL == BoardLayer.Copper)
+                            Gerber.DetermineBoardSideAndLayer(F, out BS, out BL);
+                            if (BS == BoardSide.Both && BL == BoardLayer.Outline)
                             {
-                                copperfiles.Add(F);
+                                outlinefiles.Add(F);
+                            }
+                            else
+                            {
+                                if (BS == BoardSide.Both && BL == BoardLayer.Mill)
+                                {
+                                    millfiles.Add(F);
+                                }
+                                else
+                                {
+                                    if (BL == BoardLayer.Copper)
+                                    {
+                                        copperfiles.Add(F);
+                                    }
+                                }
                             }
                         }
                     }
@@ -182,7 +190,13 @@ namespace GerberLibrary
             foreach (var a in outlinefiles)
             {
                 Files[a].Seek(0, SeekOrigin.Begin);
-                GerberOutlines[path] = new GerberOutline(new StreamReader(Files[a]), a);
+                using (MemoryStream copy = new MemoryStream())
+                {
+                    Files[a].CopyTo(copy);
+                    copy.Seek(0, SeekOrigin.Begin);
+                    using (StreamReader sr = new StreamReader(copy))
+                        GerberOutlines[path] = new GerberOutline(sr, a);
+                }
                 if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
             }
 
@@ -191,7 +205,13 @@ namespace GerberLibrary
                 foreach (var a in millfiles)
                 {
                     Files[a].Seek(0, SeekOrigin.Begin);
-                    GerberOutlines[path] = new GerberOutline(new StreamReader(Files[a]), a);
+                    using (MemoryStream copy = new MemoryStream())
+                    {
+                        Files[a].CopyTo(copy);
+                        copy.Seek(0, SeekOrigin.Begin);
+                        using (StreamReader sr = new StreamReader(copy))
+                            GerberOutlines[path] = new GerberOutline(sr, a);
+                    }
                     if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
                 }
 
@@ -539,11 +559,10 @@ namespace GerberLibrary
 
                     foreach (var Shape in a.TheGerber.OutlineShapes)
                     {
-
                         if (Shape.Hole == true)
                         {
-                            FillShape(G, new SolidBrush(Color.FromArgb(100, 0, 0, 0)), Shape);
-
+                            using (SolidBrush br = new SolidBrush(Color.FromArgb(100, 0, 0, 0)))
+                                FillShape(G, br, Shape);
                         }
                     }
                 }
@@ -567,131 +586,127 @@ namespace GerberLibrary
 
             G.TranslateTransform((float)b.Center.X, (float)b.Center.Y);
             G.RotateTransform(b.Angle);
-            Pen P = new Pen(C, PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            Pen ActiveP = new Pen(Color.FromArgb(200, 150, 20), PW * 2) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            Pen ActivePD = new Pen(Color.Green, PW * 1) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-
-            Pen ErrorP = new Pen(Color.Red, PW * 2.5f) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            if (b.GetType() == typeof(BreakTab))
+            using (Pen P = new Pen(C, PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
+            using (Pen ActiveP = new Pen(Color.FromArgb(200, 150, 20), PW * 2) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
+            using (Pen ActivePD = new Pen(Color.Green, PW * 1) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
+            using (Pen ErrorP = new Pen(Color.Red, PW * 2.5f) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
             {
-                BreakTab BT = b as BreakTab;
-                if (BT.Errors.Count > 0) errors = true;
-                DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : P);
-                PolyLine Circle = new PolyLine(PolyLine.PolyIDs.GFXTemp);
-                Circle.MakeCircle((b as BreakTab).Radius);
-                if (errors)
+                if (b.GetType() == typeof(BreakTab))
                 {
-                    DrawShape(G, ErrorP, Circle);
-                    for (int i = 0; i < BT.Errors.Count; i++)
+                    BreakTab BT = b as BreakTab;
+                    if (BT.Errors.Count > 0) errors = true;
+                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : P);
+                    PolyLine Circle = new PolyLine(PolyLine.PolyIDs.GFXTemp);
+                    Circle.MakeCircle((b as BreakTab).Radius);
+                    if (errors)
                     {
-                        G.DrawString(new PointD(BT.Radius + 1, PW * 10 * i), BT.Errors[i], PW, false);
+                        DrawShape(G, ErrorP, Circle);
+                        for (int i = 0; i < BT.Errors.Count; i++)
+                        {
+                            G.DrawString(new PointD(BT.Radius + 1, PW * 10 * i), BT.Errors[i], PW, false);
+                        }
+                    }
+                    else
+                    {
+                        DrawShape(G, P, Circle);
+                    }
+                    if (active)
+                    {
+                        DrawShape(G, errors ? ErrorP : ActivePD, Circle);
+                        DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : ActivePD);
+                        DrawShape(G, ActiveP, Circle);
+                        DrawMarker(errors, G, new PointD(0, 0), 1, PW, ActiveP);
+
+                    }
+                    if (hover)
+                    {
+                        using (Pen p = new Pen(Color.Blue, PW * 2))
+                            DrawMarker(errors, G, new PointD(0, 0), 1, PW, p);
                     }
                 }
-                else
+                if (b.GetType() == typeof(GerberInstance))
                 {
-                    DrawShape(G, P, Circle);
-                }
-                if (active)
-                {
-                    DrawShape(G, errors ? ErrorP : ActivePD, Circle);
-                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : ActivePD);
-                    DrawShape(G, ActiveP, Circle);
-                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, ActiveP);
-
-                }
-                if (hover)
-                {
-                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, new Pen(Color.Blue, PW * 2));
-
-                }
-            }
-            if (b.GetType() == typeof(GerberInstance))
-            {
-                GerberInstance GI = b as GerberInstance;
-                if (GerberOutlines.ContainsKey(GI.GerberPath))
-                {
-
-                    var a = GerberOutlines[GI.GerberPath];
-                    //  a.BuildShapeCache();
-                    float R = 0;
-                    float Gf = 0;
-                    float B = 0;
-                    float A = 0.8f;
-                    switch (GI.Tabs.Count)
-                    {
-                        case 0:
-                            R = .70f;
-                            break;
-                        case 1:
-                            R = .70f; Gf = 0.35f;
-                            break;
-                        case 2:
-                            R = .70f; Gf = 0.70f;
-                            break;
-
-                        default:
-                            Gf = 1.0f;
-                            break;
-                    }
-                    //G.FillTriangles(a.TheGerber.ShapeCacheTriangles, Color.FromArgb((byte)(A * 255.0), (byte)(R * 255.0), (byte)(Gf * 255.0), (byte)(B * 255.0)));
-
-                    foreach (var Shape in a.TheGerber.OutlineShapes)
+                    GerberInstance GI = b as GerberInstance;
+                    if (GerberOutlines.ContainsKey(GI.GerberPath))
                     {
 
-                        if (Shape.Hole == false)
+                        var a = GerberOutlines[GI.GerberPath];
+                        //  a.BuildShapeCache();
+                        float R = 0;
+                        float Gf = 0;
+                        float B = 0;
+                        float A = 0.8f;
+                        switch (GI.Tabs.Count)
                         {
-                            //FillShape(G, new SolidBrush(Color.FromArgb(100, 255, 255, 255)), Shape);
+                            case 0:
+                                R = .70f;
+                                break;
+                            case 1:
+                                R = .70f; Gf = 0.35f;
+                                break;
+                            case 2:
+                                R = .70f; Gf = 0.70f;
+                                break;
+
+                            default:
+                                Gf = 1.0f;
+                                break;
                         }
-                        else
+                        //G.FillTriangles(a.TheGerber.ShapeCacheTriangles, Color.FromArgb((byte)(A * 255.0), (byte)(R * 255.0), (byte)(Gf * 255.0), (byte)(B * 255.0)));
+
+                        foreach (var Shape in a.TheGerber.OutlineShapes)
                         {
-                            //             FillShape(G, new SolidBrush(Color.FromArgb(100, 0, 0, 0)), Shape);   
+
+                            if (Shape.Hole == false)
+                            {
+                                //FillShape(G, new SolidBrush(Color.FromArgb(100, 255, 255, 255)), Shape);
+                            }
+                            else
+                            {
+                                //             FillShape(G, new SolidBrush(Color.FromArgb(100, 0, 0, 0)), Shape);   
+                            }
+                            if (active)
+                            {
+                                DrawShape(G, ActivePD, Shape);
+                                //  DrawShapeNormals(G, ActivePD, Shape);
+                            }
+                            else
+                            {
+                                DrawShape(G, active ? ActiveP : P, Shape);
+                            }
                         }
-                        if (active)
-                        {
-                            DrawShape(G, ActivePD, Shape);
-                            //  DrawShapeNormals(G, ActivePD, Shape);
-                        }
-                        else
+                        foreach (var Shape in a.TheGerber.DisplayShapes)
                         {
                             DrawShape(G, active ? ActiveP : P, Shape);
                         }
+                        var width = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.X - a.TheGerber.BoundingBox.TopLeft.X));
+                        var height = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.Y - a.TheGerber.BoundingBox.TopLeft.Y));
+
+                        double ox = (float)(a.TheGerber.TranslationSinceLoad.X + a.TheGerber.BoundingBox.TopLeft.X) + width / 2;
+                        double oy = (float)(a.TheGerber.TranslationSinceLoad.Y + a.TheGerber.BoundingBox.TopLeft.Y + height / 2);
+
+                        PointD Ext = G.MeasureString(Path.GetFileName(GI.GerberPath));
+                        double Z = 1;
+                        if (Ext.X > width) Z = width / Ext.X;
+                        if (Ext.Y * Z > height) Z = height / Ext.Y;
+
+
+
+                        G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), Z * 30, true, R, Gf, B, A);
+
+
                     }
-                    foreach (var Shape in a.TheGerber.DisplayShapes)
+
+                    G.Transform = T;
+                    if (active)
                     {
-                        DrawShape(G, active ? ActiveP : P, Shape);
+                        DrawMarker(false, G, b.Center, 1, PW, ActivePD);
+                        DrawMarker(false, G, b.Center, 1, PW, ActiveP);
+
                     }
-                    var width = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.X - a.TheGerber.BoundingBox.TopLeft.X));
-                    var height = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.Y - a.TheGerber.BoundingBox.TopLeft.Y));
-
-                    double ox = (float)(a.TheGerber.TranslationSinceLoad.X + a.TheGerber.BoundingBox.TopLeft.X) + width / 2;
-                    double oy = (float)(a.TheGerber.TranslationSinceLoad.Y + a.TheGerber.BoundingBox.TopLeft.Y + height / 2);
-
-                    PointD Ext = G.MeasureString(Path.GetFileName(GI.GerberPath));
-                    double Z = 1;
-                    if (Ext.X > width) Z = width / Ext.X;
-                    if (Ext.Y * Z > height) Z = height / Ext.Y;
-
-
-
-                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), Z * 30, true, R, Gf, B, A);
-
-
                 }
-
                 G.Transform = T;
-                if (active)
-                {
-                    DrawMarker(false, G, b.Center, 1, PW, ActivePD);
-                    DrawMarker(false, G, b.Center, 1, PW, ActiveP);
-
-                }
-
-
-
-
-
             }
-            G.Transform = T;
         }
 
         private void DrawShapeNormals(GraphicsInterface G, Pen P, PolyLine Shape)
@@ -778,47 +793,49 @@ namespace GerberLibrary
             {
                 RenderInstanceHoles(G, PW, Color.DarkGray, b);
             }
-            Pen OO = new Pen(Color.Orange, PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-
-            Pen OO3 = new Pen(Color.FromArgb(140, 40, 40, 30), PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            SolidBrush BR = new SolidBrush(Color.FromArgb(180, 0, 100, 0));
-            //BR.Color.A = 180;
-            GP.Reset();
-
-            foreach (var FinalPoly in FinalPolygonsWithTabs)
+            using (Pen OO = new Pen(Color.Orange, PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
+            using (Pen OO3 = new Pen(Color.FromArgb(140, 40, 40, 30), PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round })
+            using (SolidBrush BR = new SolidBrush(Color.FromArgb(180, 0, 100, 0)))
             {
-                PolyLine PL2 = new PolyLine(PolyLine.PolyIDs.Temp);
-                PL2.Vertices = FinalPoly.Vertices;
-                DrawShape(G, OO3, PL2);
-                //  DrawMarker(G, PL2.Vertices.First(), 1, PW);
-                //  DrawMarker(G, PL2.Vertices.Last(), 1, PW);
+                //BR.Color.A = 180;
+                GP.Reset();
+
+                foreach (var FinalPoly in FinalPolygonsWithTabs)
+                {
+                    PolyLine PL2 = new PolyLine(PolyLine.PolyIDs.Temp);
+                    PL2.Vertices = FinalPoly.Vertices;
+                    DrawShape(G, OO3, PL2);
+                    //  DrawMarker(G, PL2.Vertices.First(), 1, PW);
+                    //  DrawMarker(G, PL2.Vertices.Last(), 1, PW);
+                }
+
+
+                //
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Temp);
+                PL.MakeSquare(0.15);
+
+                foreach (var s in DrillHoles)
+                {
+                    var T = G.Transform.Clone();
+                    G.TranslateTransform((float)s.X, (float)s.Y);
+                    using (SolidBrush br = new SolidBrush(Color.FromArgb(140, 0, 0, 0)))
+                        FillShape(G, br, PL);
+                    using (Pen p = new Pen(Color.Black))
+                        DrawShape(G, p, PL);
+                    G.Transform = T;
+                }
+
+                if (Hoverinstance != null)
+                {
+                    RenderInstance(G, PW, Color.Blue, Hoverinstance, false, false);
+                }
+
+                if (SelectedInstance != null)
+                {
+                    RenderInstance(G, PW * 2, Color.Black, null, false, true);
+                    RenderInstance(G, PW, Color.Black, SelectedInstance, false, true);
+                }
             }
-
-
-            //
-            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Temp);
-            PL.MakeSquare(0.15);
-
-            foreach (var s in DrillHoles)
-            {
-                var T = G.Transform.Clone();
-                G.TranslateTransform((float)s.X, (float)s.Y);
-                FillShape(G, new SolidBrush(Color.FromArgb(140, 0, 0, 0)), PL);
-                DrawShape(G, new Pen(Color.Black), PL);
-                G.Transform = T;
-            }
-
-            if (Hoverinstance != null)
-            {
-                RenderInstance(G, PW, Color.Blue, Hoverinstance, false, false);
-            }
-
-            if (SelectedInstance != null)
-            {
-                RenderInstance(G, PW * 2, Color.Black, null, false, true);
-                RenderInstance(G, PW, Color.Black, SelectedInstance, false, true);
-            }
-
         }
 
         /// <summary>
@@ -844,8 +861,11 @@ namespace GerberLibrary
         /// <param name="P">Pen to use (white/PW is default)</param>
         private static void DrawMarker(bool cross, GraphicsInterface G, PointD pointD, float crossize, float PW, Pen P = null)
         {
+            Pen myPen = null;
             if (P == null)
-                P = new Pen(Color.White, PW);
+            {
+                myPen = P = new Pen(Color.White, PW);
+            }
             if (cross)
             {
                 G.DrawLine(P, (float)pointD.X - crossize, (float)pointD.Y - crossize,
@@ -853,13 +873,16 @@ namespace GerberLibrary
                 G.DrawLine(P, (float)pointD.X + crossize, (float)pointD.Y - crossize,
                     (float)pointD.X - crossize, (float)pointD.Y + crossize);
             }
-
             else // plus
             {
                 G.DrawLine(P, (float)pointD.X, (float)pointD.Y - crossize,
                     (float)pointD.X, (float)pointD.Y + crossize);
                 G.DrawLine(P, (float)pointD.X + crossize, (float)pointD.Y,
                     (float)pointD.X - crossize, (float)pointD.Y);
+            }
+            if (myPen != null)
+            {
+                myPen.Dispose();
             }
         }
 
@@ -883,7 +906,7 @@ namespace GerberLibrary
 
 
             }
-            if (Points.Count() > 1)
+            if (Points.Length > 1)
                 G.DrawLines(P, Points);
         }
 
@@ -1127,7 +1150,7 @@ namespace GerberLibrary
             if (errortabsonly)
             {
                 var T = (from i in TheSet.Tabs where i.Errors.Count > 0 select i).ToList();
-                if (T.Count() > 0)
+                if (T.Count > 0)
                 {
                     foreach (var bt in T)
                     {

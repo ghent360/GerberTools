@@ -33,7 +33,7 @@ namespace GerberLibrary
         }
         public enum ArtLayerStyle
         {
-            OffsetCurves_GoldfishBoard,
+            OffsetCurvesGoldfishBoard,
             CheckerField,
             FlowField,
             Flower,
@@ -110,9 +110,9 @@ namespace GerberLibrary
                 switch (Style)
                 {
                     case ArtLayerStyle.PrototypeEdge:
-                        ArtGenerator_ProtoEdge(outline, soldermask, target, silk);
+                        ArtGenerator_ProtoEdge(outline, target);
                         break;
-                    case ArtLayerStyle.OffsetCurves_GoldfishBoard:
+                    case ArtLayerStyle.OffsetCurvesGoldfishBoard:
                         ArtGenerator_OffsetCurves(outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.FlowField:
@@ -132,7 +132,7 @@ namespace GerberLibrary
 
             }
 
-            private static void ArtGenerator_ProtoEdge(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_ProtoEdge(string outline, string target)
             {
                 Polygons CombinedSoldermask = new Polygons();
                 Console.WriteLine("combining outlines..");
@@ -262,14 +262,14 @@ namespace GerberLibrary
 
             public abstract class BounceInterface
             {
-                public abstract void RD_Bounce(RD_Elem[] FieldA, RD_Elem[] FieldB, int iW, int iH, float feed, float kill, double[] distancefield, float du = 0.2097f, float dv = 0.105f);
+                public abstract void RDBounce(RDElem[] FieldA, RDElem[] FieldB, int iW, int iH, float feed, float kill, double[] distancefield, float du = 0.2097f, float dv = 0.105f);
 
 
-                public abstract void BounceN(int p, RD_Elem[] FieldA, RD_Elem[] FieldB, int iW, int iH, float feedrate, float killrate, double[] DistanceFieldBlur);
+                public abstract void BounceN(int p, RDElem[] FieldA, RDElem[] FieldB, int iW, int iH, float feedrate, float killrate, double[] DistanceFieldBlur);
 
             }
             public static BounceInterface TheBounceInterface = null;
-            public class RD_Elem
+            public class RDElem
             {
                 public float R;
                 public float G;
@@ -370,325 +370,318 @@ namespace GerberLibrary
                 int iW = (int)(W * Res) + 2;
                 int iH = (int)(H * Res) + 2;
                 int Range = 10;// Math.Min(iW, iH) / 2;
-                Bitmap B = new Bitmap(iW, iH);
-                Bitmap B2 = new Bitmap(iW, iH);
-                Bitmap B3 = new Bitmap(iW, iH);
-                Graphics G2 = Graphics.FromImage(B3);
-                G2.Clear(Color.Black);
-                double[] DistanceField = new double[iW * iH];
-                double[] DistanceFieldBlur = new double[iW * iH];
-                double[] AngleField = new double[iW * iH];
-                bool DistMode = false;
-
-                for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
-                Graphics G = Graphics.FromImage(B);
-                G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
-                G.SmoothingMode = SmoothingMode.AntiAlias;
-
-                foreach (var a in CombinedOutline)
+                using (Bitmap B = new Bitmap(iW, iH))
+                using (Bitmap B2 = new Bitmap(iW, iH))
+                using (Bitmap B3 = new Bitmap(iW, iH))
                 {
-                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                    P.fromPolygon(a);
-                    List<PointF> Pts = new List<PointF>();
-                    foreach (var V in P.Vertices)
+                    Graphics G2 = Graphics.FromImage(B3);
+                    G2.Clear(Color.Black);
+                    double[] DistanceField = new double[iW * iH];
+                    double[] DistanceFieldBlur = new double[iW * iH];
+                    double[] AngleField = new double[iW * iH];
+                    bool DistMode = false;
+
+                    for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
+                    Graphics G = Graphics.FromImage(B);
+                    G.Clear(Color.Black);
+                    Console.WriteLine("Rendering Base Bitmap");
+                    G.SmoothingMode = SmoothingMode.AntiAlias;
+
+                    foreach (var a in CombinedOutline)
                     {
-                        Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
-                    }
-                    G.DrawPolygon(new Pen(Color.White, 4), Pts.ToArray());
-
-                    P.CheckIfHole();
-                    if (P.Hole)
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-                    }
-                    else
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-
-                    }
-
-
-                }
-
-                foreach (var a in OriginalCombinedSilk)
-                {
-                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                    P.fromPolygon(a);
-                    List<PointF> Pts = new List<PointF>();
-                    foreach (var V in P.Vertices)
-                    {
-                        Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
-                    }
-                    G.DrawPolygon(new Pen(Color.Red, 9), Pts.ToArray());
-
-                    P.CheckIfHole();
-                    if (P.Hole)
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-                    }
-                    else
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-
-                    }
-
-                }
-                B.Save(target + "_renderbase.png");
-
-
-                Console.WriteLine("Calculating Distance Field");
-
-                {
-
-                    for (int y = 0; y < iH; y++)
-                    {
-                        for (int x = 0; x < iW; x++)
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                        P.fromPolygon(a);
+                        List<PointF> Pts = new List<PointF>();
+                        foreach (var V in P.Vertices)
                         {
-                            var C = B.GetPixel(x, y);
-                            if (C.R > 10)
+                            Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
+                        }
+                        using (Pen p = new Pen(Color.White, 4))
+                            G.DrawPolygon(p, Pts.ToArray());
+
+                        P.CheckIfHole();
+                        using (SolidBrush red = new SolidBrush(Color.Red))
+                            if (P.Hole)
                             {
-                                for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
-                                {
-                                    for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
-                                    {
-                                        if (DistMode)
-                                        {
-                                            double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
-
-
-                                            DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
-                                        }
-                                        else
-                                        {
-                                            double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
-                                            if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
-
-
-
-                                        }
-
-                                    }
-                                }
+                                G2.FillPolygon(red, Pts.ToArray());
                             }
+                            else
+                            {
+                                G2.FillPolygon(red, Pts.ToArray());
+                            }
+                    }
+
+                    foreach (var a in OriginalCombinedSilk)
+                    {
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                        P.fromPolygon(a);
+                        List<PointF> Pts = new List<PointF>();
+                        foreach (var V in P.Vertices)
+                        {
+                            Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
+                        }
+                        using (Pen p = new Pen(Color.Red, 9))
+                            G.DrawPolygon(p, Pts.ToArray());
+
+                        P.CheckIfHole();
+                        using (SolidBrush red = new SolidBrush(Color.Red))
+                        if (P.Hole)
+                        {
+                            G2.FillPolygon(red, Pts.ToArray());
+                        }
+                        else
+                        {
+                            G2.FillPolygon(red, Pts.ToArray());
                         }
                     }
-                }
-                Console.WriteLine("Blurring Distance Field");
-
-                double maxblurval = 0;
-                double minblurval = 100000000000;
-                {
-
-                    for (int y = 0; y < iH; y++)
-                    {
-                        for (int x = 0; x < iW; x++)
-                        {
-                            double T = 0;
-                            double amt = 0;
-                            for (int xx = 0; xx < 1; xx++)
-                            {
-                                for (int yy = 0; yy < 1; yy++)
-                                {
-                                    double D = xx * xx + yy * yy;
-                                    double M = Math.Exp(0);
-                                    if (D > 0)
-                                    {
-                                        M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
-
-                                    }
-                                    amt += M;
-                                    T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
-
-                                }
-                            }
-                            double newval = T / amt;
-                            DistanceFieldBlur[x + iW * y] = newval;
-                            if (newval > maxblurval) maxblurval = newval;
-                            if (newval < minblurval) minblurval = newval;
-
-
-                        }
-                    }
-                }
-                {
-                    // G.Clear(Color.Black);
-                    for (int x = 0; x < iW; x++)
+                    B.Save(target + "_renderbase.png");
+                    Console.WriteLine("Calculating Distance Field");
                     {
 
                         for (int y = 0; y < iH; y++)
                         {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            //a = Math.Sqrt(a);
-
-                            byte R = (byte)((a - minblurval) * 255.0 / (maxblurval - minblurval));
-                            Color C = Color.FromArgb(R, R, R);
-                            DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
-                            B2.SetPixel(x, y, C);
-                        }
-                    }
-                    B2.Save(target + "_renderDistance.png");
-                }
-
-
-                B.Save(target + "_renderbase_afterdistance.png");
-
-
-                Console.WriteLine("Calculating DiffusePasses");
-
-                {
-                    int img = 0;
-                    //int forceiter = 0;
-                    RD_Elem[] FieldA = new RD_Elem[iW * iH];
-                    RD_Elem[] FieldB = new RD_Elem[iW * iH];
-                    Random R = new Random(0);
-                    for (int y = 0; y < iH; y++)
-                    {
-                        for (int x = 0; x < iW; x++)
-                        {
-                            FieldA[x + y * iW] = new RD_Elem();
-                            FieldB[x + y * iW] = new RD_Elem();
-                        }
-                    }
-
-                    for (int y = 0; y < iH; y++)
-                    {
-                        for (int x = 0; x < iW; x++)
-                        {
-                            var C = B.GetPixel(x, y);
-                            var C0 = B.GetPixel((x + iW - 1) % iW, y);
-                            var C1 = B.GetPixel((x + 1) % iW, y);
-                            var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
-                            var C3 = B.GetPixel(x, (y + 1) % iH);
-
-
-
-                            float Gg = (float)R.NextDouble() > 0.3 ? 0.9f : 0;
-                            float Rr = (float)R.NextDouble() > 0.8 ? 0.9f : 0; ;
-                            if (C.R + C1.R + C2.R + C3.R + C0.R < 200)
-                            { Rr = 0.9f; };
-                            SetF(FieldA, x, y, iW, iH, Gg, Rr);
-                            SetF(FieldB, x, y, iW, iH, 0, 0);
-                        }
-                    }
-
-
-                    float feedrate = 0.037f;
-                    float killrate = 0.06f;
-                    int totalbounce = 1000;
-                    for (int i = 0; i < 1; i++)
-                    {
-
-                        Console.WriteLine("bounce {0}/{1}", i, totalbounce);
-
-                        TheBounceInterface.BounceN(1000, FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
-
-                        //TheBounceInterface.RD_Bounce(FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
-                        //TheBounceInterface.RD_Bounce(FieldB, FieldA, iW, iH, feedrate, killrate, DistanceFieldBlur);
-
-                        if (i % 100 == 0)
-                        {
-                            float minR = 1000;
-                            float maxR = 0;
-                            float minG = 1000;
-                            float maxG = 0;
-                            for (int y = 0; y < iH; y++)
+                            for (int x = 0; x < iW; x++)
                             {
-                                for (int x = 0; x < iW; x++)
+                                var C = B.GetPixel(x, y);
+                                if (C.R > 10)
                                 {
-                                    var F = GetF(FieldA, x, y, iW, iH);
-                                    if (F.R > maxR) maxR = F.R;
-                                    if (F.R < minR) minR = F.R;
-                                    if (F.G > maxG) maxG = F.G;
-                                    if (F.G < minG) minG = F.G;
-                                }
-                            }
-
-                            float scaleR = (float)(255.0f / Math.Max(0.0001f, (maxR - minR)));
-                            float scaleG = (float)(255.0f / Math.Max(0.0001f, (maxR - minR)));
-                            for (int y = 0; y < iH; y++)
-                            {
-                                for (int x = 0; x < iW; x++)
-                                {
-                                    var C = B.GetPixel(x, y);
-                                    var C0 = B.GetPixel((x + iW - 1) % iW, y);
-                                    var C1 = B.GetPixel((x + 1) % iW, y);
-                                    var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
-                                    var C3 = B.GetPixel(x, (y + 1) % iH);
-
-
-
-                                    var F = GetF(FieldA, x, y, iW, iH);
-
-                                    byte c1 = (byte)(255 - ((F.R - minR) * scaleR));
-                                    byte c2 = (byte)((F.G - minG) * scaleG);
-                                    //   c1 =(byte)( c1 >= 200 ? 255 : 0);
-                                    B2.SetPixel(x, y, Color.FromArgb(c1, c1, c1));
-
-                                }
-                            }
-                            B2.Save(target + "_" + (img++).ToString() + ".png");
-
-                        }
-/*
-
-                        if (false)//i>= 1500 && ((i % 400) == 0 ) && i< 2300)
-                        {
-                            forceiter++;
-                            for (int y = 0; y < iH; y++)
-                            {
-                                for (int x = 0; x < iW; x++)
-                                {
-
-                                    var C = B.GetPixel(x, y);
-                                    var C0 = B.GetPixel((x + iW - 1) % iW, y);
-                                    var C1 = B.GetPixel((x + 1) % iW, y);
-                                    var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
-                                    var C3 = B.GetPixel(x, (y + 1) % iH);
-
-                                    var ggG = C.G + C1.G + C2.G + C3.G + C0.G;
-
-                                    var rrR = C.R + C1.R + C2.R + C3.R + C0.R;
-                                    //  double Gg = 0;
-                                    if (ggG > 200)
+                                    for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
                                     {
-                                        var F = GetF(FieldA, x, y, iW, iH);
-
-                                        var OG = F.G;
-                                        var OR = F.R;
-
-                                        F.G = OG * 0.2f + OR * 0.8f;
-                                        F.R = OR * 0.2f + OG * 0.8f; ;
-                                        //FieldA[x, y].G -= .002 - (forceiter * 0.0003); ;
-                                    }
-                                    else
-                                    {
-                                        if (rrR > 200)
+                                        for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
                                         {
-                                            var F = GetF(FieldA, x, y, iW, iH);
+                                            if (DistMode)
+                                            {
+                                                double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
 
-                                            var OG = F.G;
-                                            var OR = F.R;
 
-                                            F.G = OG * 0.1f + OR * 0.9f;
-                                            F.R = OR * 0.1f + OG * 0.9f; ;
-                                            //FieldA[x, y].G -= .002 - (forceiter * 0.0003); ;
+                                                DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                            }
+                                            else
+                                            {
+                                                double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
+                                                if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
+
+
+
+                                            }
+
                                         }
                                     }
                                 }
                             }
                         }
-                        */
-
                     }
-                }
+                    Console.WriteLine("Blurring Distance Field");
 
-                Console.WriteLine("Converting to gerber..");
-                WriteBitmapToGerber(target, Outline, Res, B2, 128);
-                Console.WriteLine("Done");
+                    double maxblurval = 0;
+                    double minblurval = 100000000000;
+                    {
+
+                        for (int y = 0; y < iH; y++)
+                        {
+                            for (int x = 0; x < iW; x++)
+                            {
+                                double T = 0;
+                                double amt = 0;
+                                for (int xx = 0; xx < 1; xx++)
+                                {
+                                    for (int yy = 0; yy < 1; yy++)
+                                    {
+                                        double D = xx * xx + yy * yy;
+                                        double M = Math.Exp(0);
+                                        if (D > 0)
+                                        {
+                                            M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+
+                                        }
+                                        amt += M;
+                                        T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
+
+                                    }
+                                }
+                                double newval = T / amt;
+                                DistanceFieldBlur[x + iW * y] = newval;
+                                if (newval > maxblurval) maxblurval = newval;
+                                if (newval < minblurval) minblurval = newval;
+
+
+                            }
+                        }
+                    }
+                    {
+                        // G.Clear(Color.Black);
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                //a = Math.Sqrt(a);
+
+                                byte R = (byte)((a - minblurval) * 255.0 / (maxblurval - minblurval));
+                                Color C = Color.FromArgb(R, R, R);
+                                DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
+                                B2.SetPixel(x, y, C);
+                            }
+                        }
+                        B2.Save(target + "_renderDistance.png");
+                    }
+                    B.Save(target + "_renderbase_afterdistance.png");
+                    Console.WriteLine("Calculating DiffusePasses");
+                    {
+                        int img = 0;
+                        //int forceiter = 0;
+                        RDElem[] FieldA = new RDElem[iW * iH];
+                        RDElem[] FieldB = new RDElem[iW * iH];
+                        Random R = new Random(0);
+                        for (int y = 0; y < iH; y++)
+                        {
+                            for (int x = 0; x < iW; x++)
+                            {
+                                FieldA[x + y * iW] = new RDElem();
+                                FieldB[x + y * iW] = new RDElem();
+                            }
+                        }
+
+                        for (int y = 0; y < iH; y++)
+                        {
+                            for (int x = 0; x < iW; x++)
+                            {
+                                var C = B.GetPixel(x, y);
+                                var C0 = B.GetPixel((x + iW - 1) % iW, y);
+                                var C1 = B.GetPixel((x + 1) % iW, y);
+                                var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
+                                var C3 = B.GetPixel(x, (y + 1) % iH);
+
+
+
+                                float Gg = (float)R.NextDouble() > 0.3 ? 0.9f : 0;
+                                float Rr = (float)R.NextDouble() > 0.8 ? 0.9f : 0; ;
+                                if (C.R + C1.R + C2.R + C3.R + C0.R < 200)
+                                { Rr = 0.9f; };
+                                SetF(FieldA, x, y, iW, iH, Gg, Rr);
+                                SetF(FieldB, x, y, iW, iH, 0, 0);
+                            }
+                        }
+
+
+                        float feedrate = 0.037f;
+                        float killrate = 0.06f;
+                        int totalbounce = 1000;
+                        for (int i = 0; i < 1; i++)
+                        {
+
+                            Console.WriteLine("bounce {0}/{1}", i, totalbounce);
+
+                            TheBounceInterface.BounceN(1000, FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
+
+                            //TheBounceInterface.RD_Bounce(FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
+                            //TheBounceInterface.RD_Bounce(FieldB, FieldA, iW, iH, feedrate, killrate, DistanceFieldBlur);
+
+                            if (i % 100 == 0)
+                            {
+                                float minR = 1000;
+                                float maxR = 0;
+                                float minG = 1000;
+                                float maxG = 0;
+                                for (int y = 0; y < iH; y++)
+                                {
+                                    for (int x = 0; x < iW; x++)
+                                    {
+                                        var F = GetF(FieldA, x, y, iW, iH);
+                                        if (F.R > maxR) maxR = F.R;
+                                        if (F.R < minR) minR = F.R;
+                                        if (F.G > maxG) maxG = F.G;
+                                        if (F.G < minG) minG = F.G;
+                                    }
+                                }
+
+                                float scaleR = (float)(255.0f / Math.Max(0.0001f, (maxR - minR)));
+                                float scaleG = (float)(255.0f / Math.Max(0.0001f, (maxR - minR)));
+                                for (int y = 0; y < iH; y++)
+                                {
+                                    for (int x = 0; x < iW; x++)
+                                    {
+                                        var C = B.GetPixel(x, y);
+                                        var C0 = B.GetPixel((x + iW - 1) % iW, y);
+                                        var C1 = B.GetPixel((x + 1) % iW, y);
+                                        var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
+                                        var C3 = B.GetPixel(x, (y + 1) % iH);
+
+
+
+                                        var F = GetF(FieldA, x, y, iW, iH);
+
+                                        byte c1 = (byte)(255 - ((F.R - minR) * scaleR));
+                                        byte c2 = (byte)((F.G - minG) * scaleG);
+                                        //   c1 =(byte)( c1 >= 200 ? 255 : 0);
+                                        B2.SetPixel(x, y, Color.FromArgb(c1, c1, c1));
+
+                                    }
+                                }
+                                B2.Save(target + "_" + (img++).ToString() + ".png");
+
+                            }
+                            /*
+
+                                                    if (false)//i>= 1500 && ((i % 400) == 0 ) && i< 2300)
+                                                    {
+                                                        forceiter++;
+                                                        for (int y = 0; y < iH; y++)
+                                                        {
+                                                            for (int x = 0; x < iW; x++)
+                                                            {
+
+                                                                var C = B.GetPixel(x, y);
+                                                                var C0 = B.GetPixel((x + iW - 1) % iW, y);
+                                                                var C1 = B.GetPixel((x + 1) % iW, y);
+                                                                var C2 = B.GetPixel(x, (y - 1 + iH) % iH);
+                                                                var C3 = B.GetPixel(x, (y + 1) % iH);
+
+                                                                var ggG = C.G + C1.G + C2.G + C3.G + C0.G;
+
+                                                                var rrR = C.R + C1.R + C2.R + C3.R + C0.R;
+                                                                //  double Gg = 0;
+                                                                if (ggG > 200)
+                                                                {
+                                                                    var F = GetF(FieldA, x, y, iW, iH);
+
+                                                                    var OG = F.G;
+                                                                    var OR = F.R;
+
+                                                                    F.G = OG * 0.2f + OR * 0.8f;
+                                                                    F.R = OR * 0.2f + OG * 0.8f; ;
+                                                                    //FieldA[x, y].G -= .002 - (forceiter * 0.0003); ;
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (rrR > 200)
+                                                                    {
+                                                                        var F = GetF(FieldA, x, y, iW, iH);
+
+                                                                        var OG = F.G;
+                                                                        var OR = F.R;
+
+                                                                        F.G = OG * 0.1f + OR * 0.9f;
+                                                                        F.R = OR * 0.1f + OG * 0.9f; ;
+                                                                        //FieldA[x, y].G -= .002 - (forceiter * 0.0003); ;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    */
+
+                        }
+                    }
+
+                    Console.WriteLine("Converting to gerber..");
+                    WriteBitmapToGerber(target, Outline, Res, B2, 128);
+                    Console.WriteLine("Done");
+                }
             }
 
-            private static void SetF(RD_Elem[] FieldB, int x, int y, int iW, int iH, float p1, float p2)
+            private static void SetF(RDElem[] FieldB, int x, int y, int iW, int iH, float p1, float p2)
             {
                 x = (x + iW) % iW;
                 y = (y + iH) % iH;
@@ -696,7 +689,7 @@ namespace GerberLibrary
                 FieldB[x + y * iW].G = p2;
             }
 
-            static RD_Elem GetF(RD_Elem[] FieldA, int x, int y, int iW, int iH)
+            static RDElem GetF(RDElem[] FieldA, int x, int y, int iW, int iH)
             {
                 x = (x + iW) % iW;
                 y = (y + iH) % iH;
@@ -796,187 +789,186 @@ namespace GerberLibrary
                 int iW = (int)(W * Res) + 10;
                 int iH = (int)(H * Res) + 10;
                 int Range = Math.Max(iW, iH);
-                Bitmap B = new Bitmap(iW, iH);
-                Bitmap B2 = new Bitmap(iW, iH);
-                Bitmap B3 = new Bitmap(iW, iH);
-                Graphics G2 = Graphics.FromImage(B3);
-                G2.Clear(Color.Black);
-                double[] DistanceField = new double[iW * iH];
-                double[] DistanceFieldBlur = new double[iW * iH];
-                double[] AngleField = new double[iW * iH];
-                bool DistMode = true;
-
-                for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
-                Graphics G = Graphics.FromImage(B);
-                G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
-                // G.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach (var a in CombinedOutline)
+                using (Bitmap B = new Bitmap(iW, iH))
+                using (Bitmap B2 = new Bitmap(iW, iH))
+                using (Bitmap B3 = new Bitmap(iW, iH))
                 {
-                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                    P.fromPolygon(a);
-                    List<PointF> Pts = new List<PointF>();
-                    foreach (var V in P.Vertices)
-                    {
-                        Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
-                    }
-                    G.DrawPolygon(new Pen(Color.White, 1), Pts.ToArray());
+                    Graphics G2 = Graphics.FromImage(B3);
+                    G2.Clear(Color.Black);
+                    double[] DistanceField = new double[iW * iH];
+                    double[] DistanceFieldBlur = new double[iW * iH];
+                    double[] AngleField = new double[iW * iH];
+                    bool DistMode = true;
 
-                    P.CheckIfHole();
-                    if (P.Hole)
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Green), Pts.ToArray());
-                    }
-                    else
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-
-                    }
-
-
-                }
-                B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
-
-                {
-                    for (int x = 0; x < iW; x++)
-                    {
-
-                        for (int y = 0; y < iH; y++)
-                        {
-                            var C = B.GetPixel(x, y);
-                            if (C.R > 10)
-                            {
-                                for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
-                                {
-                                    for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
-                                    {
-                                        if (DistMode)
-                                        {
-                                            double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
-
-
-                                            DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
-                                        }
-                                        else
-                                        {
-                                            double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
-                                            if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
-
-
-
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Console.WriteLine("Blurring Distance Field");
-
-                double maxblurval = 0;
-                double minblurval = 100000000000;
-                {
-                    for (int x = 0; x < iW; x++)
-                    {
-
-                        for (int y = 0; y < iH; y++)
-                        {
-                            double T = 0;
-                            double amt = 0;
-                            for (int xx = 0; xx < 1; xx++)
-                            {
-                                for (int yy = 0; yy < 1; yy++)
-                                {
-                                    double D = xx * xx + yy * yy;
-                                    double M = Math.Exp(0);
-                                    if (D > 0)
-                                    {
-                                        M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
-
-                                    }
-                                    amt += M;
-                                    T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
-
-                                }
-                            }
-                            double newval = T / amt;
-                            DistanceFieldBlur[x + iW * y] = newval;
-                            if (newval > maxblurval) maxblurval = newval;
-                            if (newval < minblurval) minblurval = newval;
-
-
-                        }
-                    }
-                }
-                {
+                    for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
+                    Graphics G = Graphics.FromImage(B);
                     G.Clear(Color.Black);
-                    for (int x = 0; x < iW; x++)
+                    Console.WriteLine("Rendering Base Bitmap");
+                    // G.SmoothingMode = SmoothingMode.AntiAlias;
+                    foreach (var a in CombinedOutline)
                     {
-
-                        for (int y = 0; y < iH; y++)
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                        P.fromPolygon(a);
+                        List<PointF> Pts = new List<PointF>();
+                        foreach (var V in P.Vertices)
                         {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            //a = Math.Sqrt(a);
+                            Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
+                        }
+                        using (Pen p = new Pen(Color.White, 1))
+                            G.DrawPolygon(p, Pts.ToArray());
 
-                            byte R = (byte)((a - minblurval) * 255.0 / (maxblurval - minblurval));
-                            Color C = Color.FromArgb(R / 2 + 127, R / 2 + 127, R / 2 + 127);
-                            DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
-                            B.SetPixel(x, y, C);
+                        P.CheckIfHole();
+                        if (P.Hole)
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Green))
+                                G2.FillPolygon(br, Pts.ToArray());
+                        }
+                        else
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Red))
+                                G2.FillPolygon(br, Pts.ToArray());
                         }
                     }
-                    B.Save(target + "_renderDistance.png");
-                }
+                    B.Save(target + "_renderbase.png");
+                    Console.WriteLine("Calculating Distance Field");
 
-                Console.WriteLine("Calculating Flower Field and Artwork");
-                GerberArtWriter GOW = new GerberArtWriter();
-                {
-
-
-                    //   G.Clear(Color.Black);
-                    for (int x = 0; x < iW - 1; x++)
                     {
-
-                        for (int y = 0; y < iH - 1; y++)
+                        for (int x = 0; x < iW; x++)
                         {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            var b = DistanceFieldBlur[(x + 1) + y * iW];
-                            var c = DistanceFieldBlur[x + (y + 1) * iW];
 
-                            V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
-                            V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
-                            V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
+                            for (int y = 0; y < iH; y++)
+                            {
+                                var C = B.GetPixel(x, y);
+                                if (C.R > 10)
+                                {
+                                    for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
+                                    {
+                                        for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
+                                        {
+                                            if (DistMode)
+                                            {
+                                                double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
 
-                            var D1 = BB - AA;
-                            var D2 = CC - AA;
-                            var C1 = V3.Cross(D1, D2);
-                            // var DistT = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y + C1.Z * C1.Z);
-                            var AngleRad = Math.Atan2(C1.Y, C1.X);
 
-                            AngleField[x + (y * iW)] = AngleRad;
+                                                DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                            }
+                                            else
+                                            {
+                                                double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
+                                                if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
+
+
+
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                    //  G.Clear(Color.Black);
-                    Graphics GG = Graphics.FromImage(B2);
-                    GG.Clear(Color.Gray);
+                    Console.WriteLine("Blurring Distance Field");
 
-                    FlowerThing FT = new FlowerThing();
-                    FT.Build(DistanceFieldBlur, AngleField, iW, iH, CombinedOutline);
-                    GG.DrawImage(B, 0, 0);
-                    GG.SmoothingMode = SmoothingMode.AntiAlias;
-                    GG.CompositingQuality = CompositingQuality.HighQuality;
-                    GG.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
-                    foreach (var a in FT.Items)
+                    double maxblurval = 0;
+                    double minblurval = 100000000000;
                     {
-                        a.Draw(GG);
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
+                            {
+                                double T = 0;
+                                double amt = 0;
+                                for (int xx = 0; xx < 1; xx++)
+                                {
+                                    for (int yy = 0; yy < 1; yy++)
+                                    {
+                                        double D = xx * xx + yy * yy;
+                                        double M = Math.Exp(0);
+                                        if (D > 0)
+                                        {
+                                            M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+
+                                        }
+                                        amt += M;
+                                        T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
+
+                                    }
+                                }
+                                double newval = T / amt;
+                                DistanceFieldBlur[x + iW * y] = newval;
+                                if (newval > maxblurval) maxblurval = newval;
+                                if (newval < minblurval) minblurval = newval;
+                            }
+                        }
+                    }
+                    {
+                        G.Clear(Color.Black);
+                        for (int x = 0; x < iW; x++)
+                        {
+                            for (int y = 0; y < iH; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                //a = Math.Sqrt(a);
+
+                                byte R = (byte)((a - minblurval) * 255.0 / (maxblurval - minblurval));
+                                Color C = Color.FromArgb(R / 2 + 127, R / 2 + 127, R / 2 + 127);
+                                DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
+                                B.SetPixel(x, y, C);
+                            }
+                        }
+                        B.Save(target + "_renderDistance.png");
                     }
 
-                    B2.Save(target + "_FlowerPrint.png");
-                }
+                    Console.WriteLine("Calculating Flower Field and Artwork");
+                    GerberArtWriter GOW = new GerberArtWriter();
+                    {
 
-                GOW.Write(target);
-                Console.WriteLine("Done");
+
+                        //   G.Clear(Color.Black);
+                        for (int x = 0; x < iW - 1; x++)
+                        {
+
+                            for (int y = 0; y < iH - 1; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                var b = DistanceFieldBlur[(x + 1) + y * iW];
+                                var c = DistanceFieldBlur[x + (y + 1) * iW];
+
+                                V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
+                                V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
+                                V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
+
+                                var D1 = BB - AA;
+                                var D2 = CC - AA;
+                                var C1 = V3.Cross(D1, D2);
+                                // var DistT = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y + C1.Z * C1.Z);
+                                var AngleRad = Math.Atan2(C1.Y, C1.X);
+
+                                AngleField[x + (y * iW)] = AngleRad;
+                            }
+                        }
+                        //  G.Clear(Color.Black);
+                        Graphics GG = Graphics.FromImage(B2);
+                        GG.Clear(Color.Gray);
+
+                        FlowerThing FT = new FlowerThing();
+                        FT.Build(DistanceFieldBlur, AngleField, iW, iH, CombinedOutline);
+                        GG.DrawImage(B, 0, 0);
+                        GG.SmoothingMode = SmoothingMode.AntiAlias;
+                        GG.CompositingQuality = CompositingQuality.HighQuality;
+                        GG.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+                        foreach (var a in FT.Items)
+                        {
+                            a.Draw(GG);
+                        }
+
+                        B2.Save(target + "_FlowerPrint.png");
+                    }
+
+                    GOW.Write(target);
+                    Console.WriteLine("Done");
+                }
             }
 
             public class FlowerThing
@@ -1033,11 +1025,15 @@ namespace GerberLibrary
 
                         if (Points.Count > 0)
                         {
-                            Pen Pp = new Pen(new SolidBrush(Color.Black), 1);
-                            G.FillPolygon(new SolidBrush(Color.White), Points.ToArray());
-                            G.DrawPolygon(Pp, Points.ToArray());
-                            G.DrawLine(Pp, (float)begin.X, (float)begin.Y, (float)end.X, (float)end.Y);
-                            G.DrawLine(Pp, (float)Start.X, (float)Start.Y, (float)end.X, (float)end.Y);
+                            using (SolidBrush black = new SolidBrush(Color.Black))
+                            using (Pen Pp = new Pen(black, 1))
+                            {
+                                using (SolidBrush br = new SolidBrush(Color.White))
+                                    G.FillPolygon(br, Points.ToArray());
+                                G.DrawPolygon(Pp, Points.ToArray());
+                                G.DrawLine(Pp, (float)begin.X, (float)begin.Y, (float)end.X, (float)end.Y);
+                                G.DrawLine(Pp, (float)Start.X, (float)Start.Y, (float)end.X, (float)end.Y);
+                            }
                         }
                     }
                 }
@@ -1062,9 +1058,12 @@ namespace GerberLibrary
                             case 6: C = Color.Purple; break;
 
                         }
-                        Pen Pp = new Pen(new SolidBrush(C), (float)Width);
-                        Pp.SetLineCap(LineCap.Round, LineCap.Round, DashCap.Round);
-                        G.DrawLine(Pp, (float)Start.X, (float)Start.Y, (float)End.X, (float)End.Y);
+                        using (SolidBrush br = new SolidBrush(C))
+                        using (Pen Pp = new Pen(br, (float)Width))
+                        {
+                            Pp.SetLineCap(LineCap.Round, LineCap.Round, DashCap.Round);
+                            G.DrawLine(Pp, (float)Start.X, (float)Start.Y, (float)End.X, (float)End.Y);
+                        }
                     }
                 }
 
@@ -1077,12 +1076,12 @@ namespace GerberLibrary
                 double[] DistanceField;
                 double[] AngleField;
 
-                public void Build(double[] _DistanceFieldBlur, double[] _AngleField, int iW, int iH, Polygons Outline = null)
+                public void Build(double[] distanceFieldBlur, double[] angleField, int iW, int iH, Polygons outline = null)
                 {
                     iWidth = iW;
                     iHeight = iH;
-                    AngleField = _AngleField;
-                    DistanceField = _DistanceFieldBlur;
+                    AngleField = angleField;
+                    DistanceField = distanceFieldBlur;
                     theWidth = iW;
                     theHeight = iH;
                     for (double x = theWidth * 0.1; x <= theWidth * 0.9; x += theWidth / 5)
@@ -1090,10 +1089,10 @@ namespace GerberLibrary
                         for (double y = theHeight * 0.1; y <= theHeight * 0.9; y += theHeight / 5)
                         {
 
-                            if (Outline != null)
+                            if (outline != null)
                             {
                                 bool inside = false;
-                                foreach (var a in Outline)
+                                foreach (var a in outline)
                                 {
                                     PolyLine PL = new PolyLine(PolyLine.PolyIDs.ArtWork);
                                     PL.fromPolygon(a);
@@ -1354,187 +1353,187 @@ namespace GerberLibrary
                 int iW = (int)(W * Res) + 2;
                 int iH = (int)(H * Res) + 2;
                 int Range = Math.Max(iW, iH);
-                Bitmap B = new Bitmap(iW, iH);
-                Bitmap B2 = new Bitmap(iW, iH);
-                Bitmap B3 = new Bitmap(iW, iH);
-                Graphics G2 = Graphics.FromImage(B3);
-                G2.Clear(Color.Black);
-                double[] DistanceField = new double[iW * iH];
-                double[] DistanceFieldBlur = new double[iW * iH];
-                double[] AngleField = new double[iW * iH];
-                bool DistMode = false;
-
-                for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
-                Graphics G = Graphics.FromImage(B);
-                G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
-                // G.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach (var a in CombinedOutline)
+                using (Bitmap B = new Bitmap(iW, iH))
+                using (Bitmap B2 = new Bitmap(iW, iH))
+                using (Bitmap B3 = new Bitmap(iW, iH))
                 {
-                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                    P.fromPolygon(a);
-                    List<PointF> Pts = new List<PointF>();
-                    foreach (var V in P.Vertices)
+                    Graphics G2 = Graphics.FromImage(B3);
+                    G2.Clear(Color.Black);
+                    double[] DistanceField = new double[iW * iH];
+                    double[] DistanceFieldBlur = new double[iW * iH];
+                    double[] AngleField = new double[iW * iH];
+                    bool DistMode = false;
+
+                    for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
+                    Graphics G = Graphics.FromImage(B);
+                    G.Clear(Color.Black);
+                    Console.WriteLine("Rendering Base Bitmap");
+                    // G.SmoothingMode = SmoothingMode.AntiAlias;
+                    foreach (var a in CombinedOutline)
                     {
-                        Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
-                    }
-                    G.DrawPolygon(new Pen(Color.White, 1), Pts.ToArray());
-
-                    P.CheckIfHole();
-                    if (P.Hole)
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Green), Pts.ToArray());
-                    }
-                    else
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-
-                    }
-
-
-                }
-                B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
-
-                {
-                    for (int x = 0; x < iW; x++)
-                    {
-
-                        for (int y = 0; y < iH; y++)
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                        P.fromPolygon(a);
+                        List<PointF> Pts = new List<PointF>();
+                        foreach (var V in P.Vertices)
                         {
-                            var C = B.GetPixel(x, y);
-                            if (C.R > 10)
+                            Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
+                        }
+                        using (Pen p = new Pen(Color.White, 1))
+                            G.DrawPolygon(p, Pts.ToArray());
+
+                        P.CheckIfHole();
+                        if (P.Hole)
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Green))
+                                G2.FillPolygon(br, Pts.ToArray());
+                        }
+                        else
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Red))
+                                G2.FillPolygon(br, Pts.ToArray());
+                        }
+                    }
+                    B.Save(target + "_renderbase.png");
+                    Console.WriteLine("Calculating Distance Field");
+
+                    {
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
                             {
-                                for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
+                                var C = B.GetPixel(x, y);
+                                if (C.R > 10)
                                 {
-                                    for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
+                                    for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
                                     {
-                                        if (DistMode)
+                                        for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
                                         {
-                                            double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
+                                            if (DistMode)
+                                            {
+                                                double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
 
 
-                                            DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                                DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                            }
+                                            else
+                                            {
+                                                double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
+                                                if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
+
+
+
+                                            }
+
                                         }
-                                        else
-                                        {
-                                            double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
-                                            if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
-
-
-
-                                        }
-
                                     }
                                 }
                             }
                         }
                     }
-                }
-                Console.WriteLine("Blurring Distance Field");
+                    Console.WriteLine("Blurring Distance Field");
 
-                double maxblurval = 0;
-                double minblurval = 100000000000;
-                {
-                    for (int x = 0; x < iW; x++)
+                    double maxblurval = 0;
+                    double minblurval = 100000000000;
                     {
-
-                        for (int y = 0; y < iH; y++)
+                        for (int x = 0; x < iW; x++)
                         {
-                            double T = 0;
-                            double amt = 0;
-                            for (int xx = 0; xx < 1; xx++)
+
+                            for (int y = 0; y < iH; y++)
                             {
-                                for (int yy = 0; yy < 1; yy++)
+                                double T = 0;
+                                double amt = 0;
+                                for (int xx = 0; xx < 1; xx++)
                                 {
-                                    double D = xx * xx + yy * yy;
-                                    double M = Math.Exp(0);
-                                    if (D > 0)
+                                    for (int yy = 0; yy < 1; yy++)
                                     {
-                                        M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+                                        double D = xx * xx + yy * yy;
+                                        double M = Math.Exp(0);
+                                        if (D > 0)
+                                        {
+                                            M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+
+                                        }
+                                        amt += M;
+                                        T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
 
                                     }
-                                    amt += M;
-                                    T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
+                                }
+                                double newval = T / amt;
+                                DistanceFieldBlur[x + iW * y] = newval;
+                                if (newval > maxblurval) maxblurval = newval;
+                                if (newval < minblurval) minblurval = newval;
+
+
+                            }
+                        }
+                    }
+                    {
+                        G.Clear(Color.Black);
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                //a = Math.Sqrt(a);
+                                Color C = Color.FromArgb((byte)((a - minblurval) * 255.0 / (maxblurval - minblurval)), 0, 0);
+                                B.SetPixel(x, y, C);
+                            }
+                        }
+                        B.Save(target + "_renderDistance.png");
+                    }
+                    Console.WriteLine("Calculating Angle Field and Artwork");
+
+                    {
+                        G.Clear(Color.Black);
+                        for (int x = 0; x < iW - 1; x++)
+                        {
+
+                            for (int y = 0; y < iH - 1; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                var b = DistanceFieldBlur[(x + 1) + y * iW];
+                                var c = DistanceFieldBlur[x + (y + 1) * iW];
+
+                                V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
+                                V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
+                                V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
+
+                                var D1 = BB - AA;
+                                var D2 = CC - AA;
+                                var C1 = V3.Cross(D1, D2);
+
+                                var AngleRad = Math.Atan2(C1.Y, C1.X);
+                                var AngleDeg = AngleRad * 360.0 / (Math.PI * 2);
+                                double S = Math.Sin(AngleRad * 7.0 + 0.2);
+
+                                while (AngleDeg < 0) AngleDeg += 360;
+                                byte vv = (byte)((S > 0.30) ? 255 : 0);
+
+                                Color C = Color.FromArgb(255 - Math.Min(255, (int)(AngleDeg * (255.0 / 360.0))), 0, 0);
+                                if (B3.GetPixel(x, y).R == 255)
+                                {
+                                    Color C2 = Color.FromArgb(vv, vv, vv);
+                                    B2.SetPixel(x, y, C2);
+                                }
+                                else
+                                {
+                                    B2.SetPixel(x, y, Color.Black);
 
                                 }
+                                B.SetPixel(x, y, C);
                             }
-                            double newval = T / amt;
-                            DistanceFieldBlur[x + iW * y] = newval;
-                            if (newval > maxblurval) maxblurval = newval;
-                            if (newval < minblurval) minblurval = newval;
-
-
                         }
-                    }
-                }
-                {
-                    G.Clear(Color.Black);
-                    for (int x = 0; x < iW; x++)
-                    {
 
-                        for (int y = 0; y < iH; y++)
-                        {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            //a = Math.Sqrt(a);
-                            Color C = Color.FromArgb((byte)((a - minblurval) * 255.0 / (maxblurval - minblurval)), 0, 0);
-                            B.SetPixel(x, y, C);
-                        }
-                    }
-                    B.Save(target + "_renderDistance.png");
-                }
-                Console.WriteLine("Calculating Angle Field and Artwork");
-
-                {
-                    G.Clear(Color.Black);
-                    for (int x = 0; x < iW - 1; x++)
-                    {
-
-                        for (int y = 0; y < iH - 1; y++)
-                        {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            var b = DistanceFieldBlur[(x + 1) + y * iW];
-                            var c = DistanceFieldBlur[x + (y + 1) * iW];
-
-                            V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
-                            V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
-                            V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
-
-                            var D1 = BB - AA;
-                            var D2 = CC - AA;
-                            var C1 = V3.Cross(D1, D2);
-
-                            var AngleRad = Math.Atan2(C1.Y, C1.X);
-                            var AngleDeg = AngleRad * 360.0 / (Math.PI * 2);
-                            double S = Math.Sin(AngleRad * 7.0 + 0.2);
-
-                            while (AngleDeg < 0) AngleDeg += 360;
-                            byte vv = (byte)((S > 0.30) ? 255 : 0);
-
-                            Color C = Color.FromArgb(255 - Math.Min(255, (int)(AngleDeg * (255.0 / 360.0))), 0, 0);
-                            if (B3.GetPixel(x, y).R == 255)
-                            {
-                                Color C2 = Color.FromArgb(vv, vv, vv);
-                                B2.SetPixel(x, y, C2);
-                            }
-                            else
-                            {
-                                B2.SetPixel(x, y, Color.Black);
-
-                            }
-                            B.SetPixel(x, y, C);
-                        }
+                        B.Save(target + "_renderAngle.png");
+                        B2.Save(target + "_artwork.png");
                     }
 
-                    B.Save(target + "_renderAngle.png");
-                    B2.Save(target + "_artwork.png");
+                    Console.WriteLine("Converting to gerber..");
+                    WriteBitmapToGerber(target, Outline, Res, B2);
+                    Console.WriteLine("Done");
                 }
-
-                Console.WriteLine("Converting to gerber..");
-                WriteBitmapToGerber(target, Outline, Res, B2);
-                Console.WriteLine("Done");
-
-
             }
 
             public static void WriteBitmapToGerber(string target, ParsedGerber Outline, double ResX, Bitmap B2, int threshold = 0, bool fittooutline = true, bool cliptooutline = false)
@@ -1713,197 +1712,194 @@ namespace GerberLibrary
                 int iW = (int)(W * Res) + 2;
                 int iH = (int)(H * Res) + 2;
                 int Range = Math.Max(iW, iH);
-                Bitmap B = new Bitmap(iW, iH);
-                Bitmap B2 = new Bitmap(iW, iH);
-                Bitmap B3 = new Bitmap(iW, iH);
-                Graphics G2 = Graphics.FromImage(B3);
-                G2.Clear(Color.Black);
-                double[] DistanceField = new double[iW * iH];
-                double[] DistanceFieldBlur = new double[iW * iH];
-                double[] AngleField = new double[iW * iH];
-                bool DistMode = true;
-
-                for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
-                Graphics G = Graphics.FromImage(B);
-                G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
-                // G.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach (var a in CombinedOutline)
+                using (Bitmap B = new Bitmap(iW, iH))
+                using (Bitmap B2 = new Bitmap(iW, iH))
+                using (Bitmap B3 = new Bitmap(iW, iH))
                 {
-                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                    P.fromPolygon(a);
-                    List<PointF> Pts = new List<PointF>();
-                    foreach (var V in P.Vertices)
+                    Graphics G2 = Graphics.FromImage(B3);
+                    G2.Clear(Color.Black);
+                    double[] DistanceField = new double[iW * iH];
+                    double[] DistanceFieldBlur = new double[iW * iH];
+                    double[] AngleField = new double[iW * iH];
+                    bool DistMode = true;
+
+                    for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
+                    Graphics G = Graphics.FromImage(B);
+                    G.Clear(Color.Black);
+                    Console.WriteLine("Rendering Base Bitmap");
+                    // G.SmoothingMode = SmoothingMode.AntiAlias;
+                    foreach (var a in CombinedOutline)
                     {
-                        Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
-                    }
-                    G.DrawPolygon(new Pen(Color.White, 1), Pts.ToArray());
-
-                    P.CheckIfHole();
-                    if (P.Hole)
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Green), Pts.ToArray());
-                    }
-                    else
-                    {
-                        G2.FillPolygon(new SolidBrush(Color.Red), Pts.ToArray());
-
-                    }
-
-
-                }
-                B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
-
-                {
-                    for (int x = 0; x < iW; x++)
-                    {
-
-                        for (int y = 0; y < iH; y++)
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                        P.fromPolygon(a);
+                        List<PointF> Pts = new List<PointF>();
+                        foreach (var V in P.Vertices)
                         {
-                            var C = B.GetPixel(x, y);
-                            if (C.R > 10)
+                            Pts.Add(new PointF((float)((V.X - Outline.BoundingBox.TopLeft.X) * Res) + 1, (float)((V.Y - Outline.BoundingBox.TopLeft.Y) * Res) + 1));
+                        }
+                        using (Pen p = new Pen(Color.White, 1))
+                            G.DrawPolygon(p, Pts.ToArray());
+
+                        P.CheckIfHole();
+                        if (P.Hole)
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Green))
+                                G2.FillPolygon(br, Pts.ToArray());
+                        }
+                        else
+                        {
+                            using (SolidBrush br = new SolidBrush(Color.Red))
+                                G2.FillPolygon(br, Pts.ToArray());
+                        }
+                    }
+                    B.Save(target + "_renderbase.png");
+                    Console.WriteLine("Calculating Distance Field");
+
+                    {
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
                             {
-                                for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
+                                var C = B.GetPixel(x, y);
+                                if (C.R > 10)
                                 {
-                                    for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
+                                    for (int xx = Math.Max(x - Range, 0); xx < Math.Min(iW, x + Range); xx++)
                                     {
-                                        if (DistMode)
+                                        for (int yy = Math.Max(y - Range, 0); yy < Math.Min(iH, y + Range); yy++)
                                         {
-                                            double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
+                                            if (DistMode)
+                                            {
+                                                double dist = (xx - x) * (xx - x) + (yy - y) * (yy - y);
 
 
-                                            DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                                DistanceField[xx + yy * iW] += 1.0 / (1.0 + dist * 0.1);
+                                            }
+                                            else
+                                            {
+                                                double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
+                                                if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
+
+
+
+                                            }
+
                                         }
-                                        else
-                                        {
-                                            double dist = Math.Sqrt((xx - x) * (xx - x) + (yy - y) * (yy - y));
-                                            if (dist < DistanceField[xx + yy * iW]) DistanceField[xx + yy * iW] = dist;
-
-
-
-                                        }
-
                                     }
                                 }
                             }
                         }
                     }
-                }
-                Console.WriteLine("Blurring Distance Field");
+                    Console.WriteLine("Blurring Distance Field");
 
-                double maxblurval = 0;
-                double minblurval = 100000000000;
-                {
-                    for (int x = 0; x < iW; x++)
+                    double maxblurval = 0;
+                    double minblurval = 100000000000;
                     {
-
-                        for (int y = 0; y < iH; y++)
+                        for (int x = 0; x < iW; x++)
                         {
-                            double T = 0;
-                            double amt = 0;
-                            for (int xx = 0; xx < 1; xx++)
+
+                            for (int y = 0; y < iH; y++)
                             {
-                                for (int yy = 0; yy < 1; yy++)
+                                double T = 0;
+                                double amt = 0;
+                                for (int xx = 0; xx < 1; xx++)
                                 {
-                                    double D = xx * xx + yy * yy;
-                                    double M = Math.Exp(0);
-                                    if (D > 0)
+                                    for (int yy = 0; yy < 1; yy++)
                                     {
-                                        M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+                                        double D = xx * xx + yy * yy;
+                                        double M = Math.Exp(0);
+                                        if (D > 0)
+                                        {
+                                            M = Math.Exp(-(xx * xx) * 0.01) * Math.Exp(-(yy * yy) * 0.01); ;
+
+                                        }
+                                        amt += M;
+                                        T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
 
                                     }
-                                    amt += M;
-                                    T += DistanceField[((x + xx + iW) % iW) + ((y + yy + iH) % iH) * iW] * M;
+                                }
+                                double newval = T / amt;
+                                DistanceFieldBlur[x + iW * y] = newval;
+                                if (newval > maxblurval) maxblurval = newval;
+                                if (newval < minblurval) minblurval = newval;
+
+
+                            }
+                        }
+                    }
+                    {
+                        G.Clear(Color.Black);
+                        for (int x = 0; x < iW; x++)
+                        {
+
+                            for (int y = 0; y < iH; y++)
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                //a = Math.Sqrt(a);
+                                Color C = Color.FromArgb((byte)((a - minblurval) * 255.0 / (maxblurval - minblurval)), 0, 0);
+                                DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
+                                B.SetPixel(x, y, C);
+                            }
+                        }
+                        B.Save(target + "_renderDistance.png");
+                    }
+                    Console.WriteLine("Calculating Angle Field and Artwork");
+                    GerberArtWriter GOW = new GerberArtWriter();
+
+                    {
+                        G.Clear(Color.Black);
+                        for (int x = 0; x < iW - 1; x += (int)(Res))
+                        {
+
+                            for (int y = 0; y < iH - 1; y += (int)(Res))
+                            {
+                                var a = DistanceFieldBlur[x + y * iW];
+                                var b = DistanceFieldBlur[(x + 1) + y * iW];
+                                var c = DistanceFieldBlur[x + (y + 1) * iW];
+
+                                V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
+                                V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
+                                V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
+
+                                var D1 = BB - AA;
+                                var D2 = CC - AA;
+                                var C1 = V3.Cross(D1, D2);
+                                var DistT = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y + C1.Z * C1.Z);
+                                var AngleRad = Math.Atan2(C1.Y, C1.X);
+
+                                var AngleDeg = AngleRad * 360.0 / (Math.PI * 2);
+
+                                //     C1.X /= DistT;
+                                //   C1.Y /= DistT;
+                                var Dist = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y);
+
+                                while (AngleDeg < 0) AngleDeg += 360;
+
+                                Color C = Color.FromArgb(255 - Math.Min(255, (int)(AngleDeg * (255.0 / 360.0))), 0, 0);
+                                if (B3.GetPixel(x, y).R == 255)
+                                {
+
+                                    PolyLine pL = new PolyLine(PolyLine.PolyIDs.ArtWork);
+                                    //pL.Add((x-1) / Res, (y - 1) / Res);
+                                    double cx = Math.Sin(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
+                                    double cy = Math.Cos(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
+                                    pL.Add(((x - 1) + cx) / Res, ((y - 1) + cy) / Res);
+                                    pL.Add(((x - 1) - cx) / Res, ((y - 1) - cy) / Res);
+                                    pL.Translate(Outline.BoundingBox.TopLeft.X, Outline.BoundingBox.TopLeft.Y);
+
+                                    GOW.AddPolyLine(pL, 1.0 / Res);
+                                }
+                                else
+                                {
 
                                 }
                             }
-                            double newval = T / amt;
-                            DistanceFieldBlur[x + iW * y] = newval;
-                            if (newval > maxblurval) maxblurval = newval;
-                            if (newval < minblurval) minblurval = newval;
-
-
                         }
+
                     }
+                    GOW.Write(target);
+                    Console.WriteLine("Done");
                 }
-                {
-                    G.Clear(Color.Black);
-                    for (int x = 0; x < iW; x++)
-                    {
-
-                        for (int y = 0; y < iH; y++)
-                        {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            //a = Math.Sqrt(a);
-                            Color C = Color.FromArgb((byte)((a - minblurval) * 255.0 / (maxblurval - minblurval)), 0, 0);
-                            DistanceFieldBlur[x + y * iW] = (DistanceFieldBlur[x + y * iW] - minblurval) / (maxblurval - minblurval);
-                            B.SetPixel(x, y, C);
-                        }
-                    }
-                    B.Save(target + "_renderDistance.png");
-                }
-                Console.WriteLine("Calculating Angle Field and Artwork");
-                GerberArtWriter GOW = new GerberArtWriter();
-
-                {
-                    G.Clear(Color.Black);
-                    for (int x = 0; x < iW - 1; x += (int)(Res))
-                    {
-
-                        for (int y = 0; y < iH - 1; y += (int)(Res))
-                        {
-                            var a = DistanceFieldBlur[x + y * iW];
-                            var b = DistanceFieldBlur[(x + 1) + y * iW];
-                            var c = DistanceFieldBlur[x + (y + 1) * iW];
-
-                            V3 AA = new V3(0, 0, Math.Sqrt(a) / (double)Range);
-                            V3 BB = new V3(1, 0, Math.Sqrt(b) / (double)Range);
-                            V3 CC = new V3(0, 1, Math.Sqrt(c) / (double)Range);
-
-                            var D1 = BB - AA;
-                            var D2 = CC - AA;
-                            var C1 = V3.Cross(D1, D2);
-                            var DistT = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y + C1.Z * C1.Z);
-                            var AngleRad = Math.Atan2(C1.Y, C1.X);
-
-                            var AngleDeg = AngleRad * 360.0 / (Math.PI * 2);
-
-                            //     C1.X /= DistT;
-                            //   C1.Y /= DistT;
-                            var Dist = Math.Sqrt(C1.X * C1.X + C1.Y * C1.Y);
-
-                            while (AngleDeg < 0) AngleDeg += 360;
-
-                            Color C = Color.FromArgb(255 - Math.Min(255, (int)(AngleDeg * (255.0 / 360.0))), 0, 0);
-                            if (B3.GetPixel(x, y).R == 255)
-                            {
-
-                                PolyLine pL = new PolyLine(PolyLine.PolyIDs.ArtWork);
-                                //pL.Add((x-1) / Res, (y - 1) / Res);
-                                double cx = Math.Sin(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
-                                double cy = Math.Cos(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
-                                pL.Add(((x - 1) + cx) / Res, ((y - 1) + cy) / Res);
-                                pL.Add(((x - 1) - cx) / Res, ((y - 1) - cy) / Res);
-                                pL.Translate(Outline.BoundingBox.TopLeft.X, Outline.BoundingBox.TopLeft.Y);
-
-                                GOW.AddPolyLine(pL, 1.0 / Res);
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                    }
-
-                }
-
-
-
-                GOW.Write(target);
-                Console.WriteLine("Done");
-
-
             }
 
             private static void ArtGenerator_OffsetCurves(string outline, string soldermask, string target, string silk)
@@ -2414,7 +2410,7 @@ namespace GerberLibrary
         {
             Console.WriteLine("Writing artwork: dimension: {0} -> {1}", boxtopleft, boxbottomright);
             //if (FS.Count == 0) return;
-            Console.WriteLine("Number of fonts: {0}", AS.Fonts.Count());
+            Console.WriteLine("Number of fonts: {0}", AS.Fonts.Count);
             foreach(var F in AS.Fonts)
             {
                 try
@@ -2430,7 +2426,7 @@ namespace GerberLibrary
                     
             }
 
-            Console.WriteLine("Number of labels: {0}", AS.Labels.Count());
+            Console.WriteLine("Number of labels: {0}", AS.Labels.Count);
             
             foreach (var T in AS.Labels)
             {
@@ -2445,7 +2441,7 @@ namespace GerberLibrary
 
                 if (F == null)
                 {
-                    if (FS.Count()>0)
+                    if (FS.Count>0)
                     {
                         F = FS.Values.First();
                     }

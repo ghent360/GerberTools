@@ -77,63 +77,63 @@ namespace GerberLibrary
                 string TargetZip = Path.Combine(BoardFactoryFolder, Name + "_gerbers.zip");
                 if (File.Exists(TargetZip)) File.Delete(TargetZip);
                 Console.WriteLine("Zipping gerbers to {0}", TargetZip);
-                ZipFile Z = new ZipFile();
-                List<string> OutlineMerge = new List<string>();
-                foreach (var F in Directory.GetFiles(BoardGerbersFolder))
+                using (ZipFile Z = new ZipFile())
                 {
-                    bool AddToZip = false;
-                    var T = GerberLibrary.Gerber.FindFileType(F);
-                    if (T == BoardFileType.Drill)
+                    List<string> OutlineMerge = new List<string>();
+                    foreach (var F in Directory.GetFiles(BoardGerbersFolder))
                     {
-                        AddToZip = true;
-                    }
-                    else
-                    {
-                        GerberLibrary.Gerber.DetermineBoardSideAndLayer(F, out BoardSide Side, out BoardLayer Layer);
-                        switch (Layer)
+                        bool AddToZip = false;
+                        var T = GerberLibrary.Gerber.FindFileType(F);
+                        if (T == BoardFileType.Drill)
                         {
-                            case BoardLayer.Mill:
-                            case BoardLayer.Outline:
-                                OutlineMerge.Add(F);
-                                break;
-                            case BoardLayer.Carbon:
-                            case BoardLayer.Paste:
-                            case BoardLayer.Silk:
-                            case BoardLayer.SolderMask:
-                            case BoardLayer.Copper:
-                            case BoardLayer.Drill:
-                                AddToZip = true;
-                                break;
-                            case BoardLayer.Assembly:
-                                string TargetGerb = Path.Combine(BoardFactoryFolder, Name +"_"+ Path.GetFileName(F));
-                                File.Copy(F, TargetGerb, true);
-                                break;
+                            AddToZip = true;
+                        }
+                        else
+                        {
+                            GerberLibrary.Gerber.DetermineBoardSideAndLayer(F, out BoardSide Side, out BoardLayer Layer);
+                            switch (Layer)
+                            {
+                                case BoardLayer.Mill:
+                                case BoardLayer.Outline:
+                                    OutlineMerge.Add(F);
+                                    break;
+                                case BoardLayer.Carbon:
+                                case BoardLayer.Paste:
+                                case BoardLayer.Silk:
+                                case BoardLayer.SolderMask:
+                                case BoardLayer.Copper:
+                                case BoardLayer.Drill:
+                                    AddToZip = true;
+                                    break;
+                                case BoardLayer.Assembly:
+                                    string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + Path.GetFileName(F));
+                                    File.Copy(F, TargetGerb, true);
+                                    break;
+                            }
+                        }
+                        if (AddToZip)
+                        {
+                            Console.WriteLine("Adding {0} to zip.", F);
+                            Z.AddFile(F, ".");
                         }
                     }
-                    if (AddToZip)
+                    if (OutlineMerge.Count > 0)
                     {
-                        Console.WriteLine("Adding {0} to zip.", F);
-                        Z.AddFile(F,".");
+                        if (OutlineMerge.Count == 1)
+                        {
+                            //                        string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + Path.GetFileName(OutlineMerge[0]));
+                            //                      File.Copy(OutlineMerge[0], TargetGerb, true);
+                            Z.AddFile(OutlineMerge[0], ".");
+                        }
+                        else
+                        {
+                            string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + "MergedOutlines.gko");
+                            GerberMerger.MergeAll(OutlineMerge, TargetGerb, new MergeLog());
+                            Z.AddFile(TargetGerb, ".");
+                        }
                     }
+                    Z.Save(TargetZip);
                 }
-                if (OutlineMerge.Count > 0)
-                {
-                    if (OutlineMerge.Count == 1)
-                    {
-//                        string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + Path.GetFileName(OutlineMerge[0]));
-  //                      File.Copy(OutlineMerge[0], TargetGerb, true);
-                        Z.AddFile(OutlineMerge[0],".");
-                    }
-                    else
-                    {
-                        string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + "MergedOutlines.gko");
-                        GerberMerger.MergeAll(OutlineMerge, TargetGerb, new MergeLog());
-                        Z.AddFile(TargetGerb,".");
-                    }
-                }
-                Z.Save(TargetZip);
-
-
             }
         }
         public class MergeLog : ProgressLog
@@ -318,7 +318,7 @@ namespace GerberLibrary
             Side = BoardSide.Unknown;
             Layer = BoardLayer.Unknown;
             string[] filesplit = Path.GetFileName( gerberfile).Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            string ext = filesplit[filesplit.Length - 1].ToLower();
             switch (ext)
             {
                 case "art": // ORCAD RELATED TYPES
@@ -662,7 +662,7 @@ namespace GerberLibrary
             //filename = filename.ToLower();
             List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp", "svg" };
             string[] filesplit = filename.Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            string ext = filesplit[filesplit.Length - 1].ToLower();
             foreach (var s in unsupported)
             {
                 if (ext == s)
@@ -675,7 +675,7 @@ namespace GerberLibrary
             {
                 // var F = File.OpenText(a);
                 var F = File.ReadAllLines(filename);
-                for (int i = 0; i < F.Count(); i++)
+                for (int i = 0; i < F.Length; i++)
                 {
                     string L = F[i];
                     if (L.Contains("%FS")) return BoardFileType.Gerber;
@@ -703,7 +703,7 @@ namespace GerberLibrary
             filename = filename.ToLower();
             List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
             string[] filesplit = filename.Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            string ext = filesplit[filesplit.Length - 1].ToLower();
             foreach (var s in unsupported)
             {
                 if (ext == s)
@@ -723,7 +723,7 @@ namespace GerberLibrary
                 //var F = File.ReadAllLines(filename);
 
 
-                for (int i = 0; i < lines.Count(); i++)
+                for (int i = 0; i < lines.Count; i++)
                 {
                     string L = lines[i];
                     if (L.Contains("%FS")) return BoardFileType.Gerber;
@@ -830,58 +830,55 @@ namespace GerberLibrary
 
             var Tr = GIC.BuildMatrix(Width, Height);
 
-            Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true);
-            if (B2 == null) return false;
-
-            var GerberLines = PolyLineSet.SanitizeInputLines(System.IO.File.ReadAllLines(GerberFilename).ToList());
-            double LastX = 0;
-            double LastY = 0;
-
-
-
-            Graphics G2 = Graphics.FromImage(B2);
-
-            GerberImageCreator.ApplyAASettings(G2);
-            //G2.Clear(Background);
-            G2.Transform = Tr.Clone();
-
-
-
-            foreach (var L in GerberLines)
+            using (Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true))
             {
-                if (L[0] != '%')
+                if (B2 == null) return false;
+
+                var GerberLines = PolyLineSet.SanitizeInputLines(System.IO.File.ReadAllLines(GerberFilename).ToList());
+                double LastX = 0;
+                double LastY = 0;
+
+                Graphics G2 = Graphics.FromImage(B2);
+
+                GerberImageCreator.ApplyAASettings(G2);
+                //G2.Clear(Background);
+                G2.Transform = Tr.Clone();
+
+                foreach (var L in GerberLines)
                 {
-                    GerberSplitter GS = new GerberSplitter();
-                    GS.Split(L, PLS.State.CoordinateFormat);
-
-                    if (GS.Has("G") && (int)GS.Get("G") == 3)
+                    if (L[0] != '%')
                     {
-                        double X = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
-                        double Y = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+                        GerberSplitter GS = new GerberSplitter();
+                        GS.Split(L, PLS.State.CoordinateFormat);
 
-                        double I = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
-                        double J = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                        if (GS.Has("G") && (int)GS.Get("G") == 3)
+                        {
+                            double X = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                            double Y = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
 
-                        //Console.WriteLine("Counterclockwise Curve {0},{1} -> {2},{3}", LastX, LastY, X, Y);
-                        DrawCross(G2, X, Y, Color.Blue);
-                        DrawCross(G2, LastX, LastY, Color.Red);
+                            double I = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                            double J = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
 
-                        DrawCross(G2, LastX + I, LastY - J, Color.Yellow);
-                        DrawCross(G2, LastX + I, LastY + J, Color.Purple);
-                        DrawCross(G2, LastX - I, LastY - J, Color.Green);
-                        DrawCross(G2, LastX - I, LastY + J, Color.Orange);
+                            //Console.WriteLine("Counterclockwise Curve {0},{1} -> {2},{3}", LastX, LastY, X, Y);
+                            DrawCross(G2, X, Y, Color.Blue);
+                            DrawCross(G2, LastX, LastY, Color.Red);
 
+                            DrawCross(G2, LastX + I, LastY - J, Color.Yellow);
+                            DrawCross(G2, LastX + I, LastY + J, Color.Purple);
+                            DrawCross(G2, LastX - I, LastY - J, Color.Green);
+                            DrawCross(G2, LastX - I, LastY + J, Color.Orange);
+
+                        }
+
+                        if (GS.Has("X")) LastX = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                        if (GS.Has("Y")) LastY = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
                     }
 
-                    if (GS.Has("X")) LastX = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
-                    if (GS.Has("Y")) LastY = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
                 }
 
+                B2.Save(BitmapFilename);
+                return true;
             }
-
-
-            B2.Save(BitmapFilename);
-            return true;
         }
 
         public static bool SaveGerberFileToImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
@@ -940,10 +937,12 @@ namespace GerberLibrary
             GIC.BoundingBox.AddBox(PLS.BoundingBox);
 
             var Tr = GIC.BuildMatrix(Width, Height);
-            Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true);
-            if (B2 == null) return false;
-            B2.Save(BitmapFilename);
-            return true;
+            using (Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true))
+            {
+                if (B2 == null) return false;
+                B2.Save(BitmapFilename);
+                return true;
+            }
         }
 
         public static string ToFloatingPointString(double value)
@@ -1012,11 +1011,13 @@ namespace GerberLibrary
         private static void DrawCross(Graphics G2, double X, double Y, Color C)
         {
             float S = 0.2f;
-            Pen P = new Pen(C, 1.0f);
-            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X + S, (float)Y - S);
-            G2.DrawLine(P, (float)X - S, (float)Y + S, (float)X + S, (float)Y + S);
-            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X - S, (float)Y + S);
-            G2.DrawLine(P, (float)X + S, (float)Y - S, (float)X + S, (float)Y + S);
+            using (Pen P = new Pen(C, 1.0f))
+            {
+                G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X + S, (float)Y - S);
+                G2.DrawLine(P, (float)X - S, (float)Y + S, (float)X + S, (float)Y + S);
+                G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X - S, (float)Y + S);
+                G2.DrawLine(P, (float)X + S, (float)Y - S, (float)X + S, (float)Y + S);
+            }
 
         }
 

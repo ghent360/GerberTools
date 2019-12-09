@@ -365,9 +365,9 @@ namespace GerberLibrary
                                             GNF.SetMetricMode();
 
                                         }
-                                        if (S.Count() > 1)
+                                        if (S.Length > 1)
                                         {
-                                            for (int i = 1; i < S.Count(); i++)
+                                            for (int i = 1; i < S.Length; i++)
                                             {if (S[i][0] == '0')
                                             {
                                                 Console.WriteLine("Number spec reading!: {0}", S[i]);

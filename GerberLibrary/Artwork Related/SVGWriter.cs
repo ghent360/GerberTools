@@ -11,7 +11,7 @@ using GerberLibrary.Core.Primitives;
 namespace GerberLibrary
 {
 
-    public class SVGGraphicsInterface : Core.GraphicsInterface
+    public sealed class SVGGraphicsInterface : Core.GraphicsInterface, IDisposable
     {
         public double Width;
 
@@ -35,7 +35,7 @@ namespace GerberLibrary
         {
             return d.ToString().Replace(',', '.');
         }
-        private object GetCMYK(double c, double m, double y, double k)
+        private static object GetCMYK(double c, double m, double y, double k)
         {
             //fill = "#ffffff icc-color(Generic-CMYK-profile, 1.00, 0.50, 0.00, 0.25)
             return string.Format("#ffffff icc-color(Generic-CMYK-profile, {0},{1},{2},{3})", D(c),D(m),D(y),D(k)); 
@@ -43,11 +43,11 @@ namespace GerberLibrary
 
         public double Height;
 
-        public string GetColor(byte r, byte g, byte b)
+        public static string GetColor(byte r, byte g, byte b)
         {
             return String.Format("#{0:X2}{1:X2}{2:X2}", r, g, b);
         }
-        public string GetColor(Color C)
+        public static string GetColor(Color C)
         {
             return GetColor(C.R, C.G, C.B);
         }
@@ -172,14 +172,14 @@ namespace GerberLibrary
                         clipped++;
                     }
                 }
-                if (clipped == list.Count())
+                if (clipped == list.Length)
                 {
                     return;
                 }
             }
 
             commands += "M" + list[0].X.ToString().Replace(',', '.') + "," + list[0].Y.ToString().Replace(',', '.');
-            for (int i = 1; i < list.Count(); i++)
+            for (int i = 1; i < list.Length; i++)
             {
                 commands += "L" + list[i].X.ToString().Replace(',', '.') + "," + list[i].Y.ToString().Replace(',', '.');
             }
@@ -201,7 +201,7 @@ namespace GerberLibrary
             CurrentTransform.TransformPoints(list);
 
             commands += "M" + list[0].X.ToString().Replace(',', '.') + "," + list[0].Y.ToString().Replace(',', '.');
-            for (int i = 1; i < list.Count(); i++)
+            for (int i = 1; i < list.Length; i++)
             {
                 commands += "L" + list[i].X.ToString().Replace(',', '.') + "," + list[i].Y.ToString().Replace(',', '.');
             }
@@ -235,18 +235,22 @@ namespace GerberLibrary
 
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {
-            DrawLine(new Pen(color), x, y, x + w, y);
-            DrawLine(new Pen(color), x + w, y, x + w, y + h);
-            DrawLine(new Pen(color), x + w, y + h, x, y + h);
-            DrawLine(new Pen(color), x, y + h, x, y);
+            using (Pen p = new Pen(color)) {
+                DrawLine(p, x, y, x + w, y);
+                DrawLine(p, x + w, y, x + w, y + h);
+                DrawLine(p, x + w, y + h, x, y + h);
+                DrawLine(p, x, y + h, x, y);
+            }
         }
 
         public void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1)
         {
-            DrawLine(new Pen(color, strokewidth), x, y, x+w,y);
-            DrawLine(new Pen(color, strokewidth), x+w, y, x+w, y+h);
-            DrawLine(new Pen(color, strokewidth), x+w, y+h, x,y+ h);
-            DrawLine(new Pen(color, strokewidth), x, y+h, x, y);
+            using (Pen p = new Pen(color, strokewidth)) {
+                DrawLine(p, x, y, x + w, y);
+                DrawLine(p, x + w, y, x + w, y + h);
+                DrawLine(p, x + w, y + h, x, y + h);
+                DrawLine(p, x, y + h, x, y);
+            }
         }
 
         public void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF)
@@ -323,12 +327,18 @@ namespace GerberLibrary
             Points.Add(new PointF((float)Width, 0));
             Points.Add(new PointF((float)Width, (float)Height));
             Points.Add(new PointF(0, (float)Height));
-            DrawPolyline(new Pen(Color.Black, 0.25f), Points, true);
+            using (Pen p = new Pen(Color.Black, 0.25f))
+                DrawPolyline(p, Points, true);
         }
 
         public void FillTriangles(List<Triangle> triangles, Color C)
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            CurrentTransform.Dispose();
         }
     }
 

@@ -965,7 +965,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.OffsetCurves_GoldfishBoard);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.OffsetCurvesGoldfishBoard);
             }
         }
 

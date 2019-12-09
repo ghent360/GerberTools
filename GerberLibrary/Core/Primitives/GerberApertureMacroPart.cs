@@ -89,7 +89,7 @@ namespace GerberLibrary.Core.Primitives
             public static double BuildValueFromExpressionAndParams(string Expression, List<double> paramlist)
             {
                 string srccopy = Expression.Replace("$1", "V1"); ;
-                for (int i = 2; i < paramlist.Count() + 1; i++)
+                for (int i = 2; i < paramlist.Count + 1; i++)
                 {
                     srccopy = srccopy.Replace("$" + i.ToString(), "V" + i.ToString());
                 }
@@ -98,7 +98,7 @@ namespace GerberLibrary.Core.Primitives
                 // srccopy = srccopy.Replace('.', ',');
                 MacroExpressionEvaluator E = new MacroExpressionEvaluator();
 
-                for (int i = 0; i < paramlist.Count(); i++)
+                for (int i = 0; i < paramlist.Count; i++)
                 {
                     E.Set("V" + (i + 1).ToString(), paramlist[i]);
 
@@ -121,7 +121,7 @@ namespace GerberLibrary.Core.Primitives
                 if (boundparam > -1)
                 {
                     string srccopy = ExpressionSource.Replace("$1", "V1"); ;
-                    for (int i = 2; i < paramlist.Count() + 1; i++)
+                    for (int i = 2; i < paramlist.Count + 1; i++)
                     {
                         srccopy = srccopy.Replace("$" + i.ToString(), "V" + i.ToString());
                     }
@@ -130,7 +130,7 @@ namespace GerberLibrary.Core.Primitives
                     // srccopy = srccopy.Replace('.', ',');
                     MacroExpressionEvaluator E = new MacroExpressionEvaluator();
 
-                    for (int i = 0; i < paramlist.Count(); i++)
+                    for (int i = 0; i < paramlist.Count; i++)
                     {
                         E.Set("V" + (i + 1).ToString(), paramlist[i]);
 
@@ -256,7 +256,7 @@ namespace GerberLibrary.Core.Primitives
                             P.Add(B.X, B.Y);
                         }
                         P.RotateDegrees(rotationdegrees);
-                        for (int i = 0; i < P.Vertices.Count(); i++)
+                        for (int i = 0; i < P.Vertices.Count; i++)
                         {
 
                             res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(GNF._ScaleMMToFile(P.Vertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(GNF._ScaleMMToFile(P.Vertices[i].Y)).Replace(',', '.'));
@@ -378,22 +378,22 @@ namespace GerberLibrary.Core.Primitives
                 case ApertureMacroTypes.Equation:
 
                     int T = int.Parse(EquationTarget.Substring(1));
-                    while (paramlist.Count() < T) paramlist.Add(0);
+                    while (paramlist.Count < T) paramlist.Add(0);
                     {
                         string srccopy = EquationSource.Replace("$1", "V1");
-                        for (int i = 2; i <= paramlist.Count(); i++)
+                        for (int i = 2; i <= paramlist.Count; i++)
                         {
                             srccopy = srccopy.Replace("$" + i.ToString(), "V" + i.ToString());
 
                         }
                         srccopy = srccopy.Replace("X", "*");
                         MacroExpressionEvaluator E = new MacroExpressionEvaluator();
-                        for (int i = 0; i < paramlist.Count(); i++)
+                        for (int i = 0; i < paramlist.Count; i++)
                         {
                             E.Set("V" + (i + 1).ToString(), paramlist[i]);
 
                         }
-                        while (paramlist.Count() < T) paramlist.Add(0);
+                        while (paramlist.Count < T) paramlist.Add(0);
 
                         paramlist[T - 1] = E.Evaluate(srccopy); ;
                         if (Gerber.ShowProgress)
@@ -413,7 +413,7 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case ApertureMacroTypes.Polygon:
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for polygon. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for polygon. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
 
                         Sides = (int)Params[2].BuildValue(paramlist);
                         var diamvalue = Params[5].BuildValue(paramlist);
@@ -425,7 +425,7 @@ namespace GerberLibrary.Core.Primitives
                     }
                     break;
                 case ApertureMacroTypes.Outline:
-                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for outline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for outline. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
                     OutlineVerticesPostProc = new List<PointD>();
                     foreach(var a in OutlineVertices)
                     {
@@ -437,7 +437,7 @@ namespace GerberLibrary.Core.Primitives
                 case ApertureMacroTypes.Circle:
                     try
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
                         Diameter = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
                         Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
                         Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
@@ -453,7 +453,7 @@ namespace GerberLibrary.Core.Primitives
 
                 case ApertureMacroTypes.CenterLine:
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for centerline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for centerline. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
                         {
                             //1 Exposure off/on (0/1))
                             //2 Rectangle width, a decimal ≥ 0.
@@ -473,7 +473,7 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case ApertureMacroTypes.LowerLeftLine:
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for lowerleftline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for lowerleftline. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
                         {
                             // 1 Exposure off/on (0/1))
                             // 2 Rectangle width, a decimal ≥ 0.
@@ -492,7 +492,7 @@ namespace GerberLibrary.Core.Primitives
                     }
                     break;
                 case ApertureMacroTypes.Thermal:
-                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
 
                     Xoff = GNF.ScaleFileToMM(Params[1].BuildValue(paramlist));
                     Yoff = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
@@ -517,7 +517,7 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case ApertureMacroTypes.Moire:
 
-                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
 
                     Xoff = GNF.ScaleFileToMM(Params[1].BuildValue(paramlist));
                     Yoff = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
@@ -546,7 +546,7 @@ namespace GerberLibrary.Core.Primitives
                 case ApertureMacroTypes.Line_2:
                 case ApertureMacroTypes.Line:
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for line. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for line. {0} params. {1} in paramlist", Params.Count, paramlist.Count);
                         {
                             //1 Exposure off/on (0/1)
                             //2 Line width, a decimal ≥ 0.

@@ -44,8 +44,8 @@ namespace GerberLibrary.Core
             Random R = new Random();
             for (int i = 0; i < 100000; i++)
             {
-                int idx1 = R.Next(Shapes.Count() - 3);
-                int idx2 = R.Next(Shapes.Count() - 3);
+                int idx1 = R.Next(Shapes.Count - 3);
+                int idx2 = R.Next(Shapes.Count - 3);
                 if (idx1 != idx2)
                 {
                     if (idx2 < idx1)

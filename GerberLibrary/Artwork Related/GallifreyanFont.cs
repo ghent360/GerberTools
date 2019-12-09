@@ -122,12 +122,21 @@ namespace GerberLibrary
                 y -= h / 2;
                 if (DoFill)
                 {
-                    this.G.FillEllipse(new SolidBrush(sfg), (float)x, (float)y, (float)w, (float)h);
-                    if (DoStroke) this.G.DrawEllipse(GetPen(), (float)x, (float)y, (float)w, (float)h);
+                    using (SolidBrush br = new SolidBrush(sfg))
+                    this.G.FillEllipse(br, (float)x, (float)y, (float)w, (float)h);
+                    if (DoStroke)
+                    {
+                        using (Pen p = GetPen())
+                            this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
+                    }
                 }
                 else
                 {
-                    if (DoStroke) this.G.DrawEllipse(GetPen(), (float)x, (float)y, (float)w, (float)h);
+                    if (DoStroke)
+                    {
+                        using (Pen p = GetPen())
+                            this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
+                    }
                 }
             }
 
@@ -153,8 +162,8 @@ namespace GerberLibrary
             public GraphicsWriter(Graphics G)
             {
                 this.G = G;
-                this.G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            
+                if (this.G != null)
+                    this.G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             }
             public void strokeCap(CAPSHAPE cAPSHAPE)
             {
@@ -163,30 +172,37 @@ namespace GerberLibrary
 
             public void arc(double nX, double nY, double p1, double p2, double start, double end)
             {
-                Pen p = GetPen();
-                double sweep = end - start;
-                this.G.DrawArc(p, new RectangleF(new PointF((float)(nX - p1 / 2), (float)(nY - p2 / 2)), new SizeF((float)p1, (float)p2)), (float)conv(start), conv(sweep));
+                using (Pen p = GetPen())
+                {
+                    double sweep = end - start;
+                    this.G.DrawArc(p, new RectangleF(new PointF((float)(nX - p1 / 2), (float)(nY - p2 / 2)), new SizeF((float)p1, (float)p2)), (float)Conv(start), Conv(sweep));
+                }
             }
 
             public void line(double x1, double y1, double x2, double y2)
             {
-                Pen p = GetPen();
-                this.G.DrawLine(p, (float)x1, (float)y1, (float)x2, (float)y2);
+                using (Pen p = GetPen())
+                {
+                    this.G.DrawLine(p, (float)x1, (float)y1, (float)x2, (float)y2);
+                }
             }
 
-            public float conv(double inp)
+            static public float Conv(double inp)
             {
                 return (float)((inp / (Math.PI * 2)) * 360.0);
             }
 
             public Pen GetPen()
             {
-                var p = new Pen(new SolidBrush(sfg), (float)strokewidth);
+                using (SolidBrush br = new SolidBrush(sfg))
+                {
+                    var p = new Pen(br, (float)strokewidth);
 
-                System.Drawing.Drawing2D.LineCap Cap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.LineCap.Round : System.Drawing.Drawing2D.LineCap.Square;
-                System.Drawing.Drawing2D.DashCap DCap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.DashCap.Round : System.Drawing.Drawing2D.DashCap.Flat;
-                p.SetLineCap(Cap, Cap, DCap);
-                return p;
+                    System.Drawing.Drawing2D.LineCap Cap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.LineCap.Round : System.Drawing.Drawing2D.LineCap.Square;
+                    System.Drawing.Drawing2D.DashCap DCap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.DashCap.Round : System.Drawing.Drawing2D.DashCap.Flat;
+                    p.SetLineCap(Cap, Cap, DCap);
+                    return p;
+                }
             }
             public void stroke(Color strokecol)
             {
@@ -1079,7 +1095,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                if (indexes.Count() == 0)
+                if (indexes.Count == 0)
                 {
                     double a;
 
@@ -1100,7 +1116,7 @@ namespace GerberLibrary
                 {
                     int r;
 
-                    r = (int)Math.Floor((double)Random((int)indexes.Count()));
+                    r = (int)Math.Floor((double)Random((int)indexes.Count));
 
                     int j = indexes[r];
                     double a = angles[r] + Math.PI;

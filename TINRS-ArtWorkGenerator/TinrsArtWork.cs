@@ -324,7 +324,7 @@ namespace TINRS_ArtWorkGenerator
                     }
                     GAW.Write(gerbersaveFileDialog1.FileName);
                 }
-                catch (Exception E)
+                catch (Exception)
                 {
 
                 }

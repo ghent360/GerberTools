@@ -19,7 +19,8 @@ namespace GerberLibrary.Core
 
         public void Draw(Graphics g,Color C, float W  = 1.0f)
         {
-            g.DrawLine(new Pen(C, W), x1, y1, x2, y2);
+            using (Pen p = new Pen(C, W))
+                g.DrawLine(p, x1, y1, x2, y2);
         }
 
         public static float SumLengths(List<Line> outline)
@@ -138,7 +139,7 @@ namespace GerberLibrary.Core
             {
                 foreach (var p in input)
                 {
-                    if (p.Vertices.Count() > 0)
+                    if (p.Vertices.Count > 0)
                     {
 
                         FirstSweep.Add(Sanitize(p));
@@ -215,7 +216,7 @@ namespace GerberLibrary.Core
                             for (int i = 1; i < a.Vertices.Count; i++)
                             {
                                 var N1 = MathHelpers.Normal(a.Vertices[(i-1)], a.Vertices[i]);
-                                var N2 = MathHelpers.Normal(a.Vertices[i], a.Vertices[(i + 1) % a.Vertices.Count()]);
+                                var N2 = MathHelpers.Normal(a.Vertices[i], a.Vertices[(i + 1) % a.Vertices.Count]);
                                 if (N1.Dot(N2) < 0.8)
                                 {
                                     DebugN.Add(a.Vertices[i]);
@@ -262,28 +263,33 @@ namespace GerberLibrary.Core
                                     Bbox.FitPoint(new PointD(v.X - 10, v.Y - 10));
                                 }
                                 float Scaler = 50.0f;
-                                Bitmap OutB = new Bitmap((int)(Bbox.Width() * Scaler), (int)(Bbox.Height() * Scaler));
-
-                                Graphics G = Graphics.FromImage(OutB);
-                                G.Clear(Color.White);
-                                GraphicsGraphicsInterface GGI = new GraphicsGraphicsInterface(G);
-
-                                GGI.TranslateTransform((float)-Bbox.TopLeft.X * Scaler, (float)-Bbox.TopLeft.Y * Scaler);
-                                GGI.DrawLines(new Pen(Color.Red, 0.1f), (from i in a.Vertices select (i * Scaler).ToF()).ToArray());
-                                for (int i = 1; i < a.Vertices.Count; i++)
+                                using (Bitmap OutB = new Bitmap((int)(Bbox.Width() * Scaler), (int)(Bbox.Height() * Scaler)))
                                 {
 
-                                    var N = MathHelpers.Normal(a.Vertices[i - 1], a.Vertices[i]);
+                                    Graphics G = Graphics.FromImage(OutB);
+                                    G.Clear(Color.White);
+                                    GraphicsGraphicsInterface GGI = new GraphicsGraphicsInterface(G);
 
-                                    GGI.DrawString(i.ToString(), new Font("arial", 14), new SolidBrush(Color.FromArgb((i + 128) % 256, i % 256, i % 256)), (float)a.Vertices[i].X * Scaler + (float)N.X * 20.0f, (float)a.Vertices[i].Y * Scaler + (float)N.Y * 20.0f, new StringFormat());
+                                    GGI.TranslateTransform((float)-Bbox.TopLeft.X * Scaler, (float)-Bbox.TopLeft.Y * Scaler);
+                                    using (Pen p = new Pen(Color.Red, 0.1f))
+                                        GGI.DrawLines(p, (from i in a.Vertices select (i * Scaler).ToF()).ToArray());
+                                    for (int i = 1; i < a.Vertices.Count; i++)
+                                    {
+                                        var N = MathHelpers.Normal(a.Vertices[i - 1], a.Vertices[i]);
+                                        using (SolidBrush br = new SolidBrush(Color.FromArgb((i + 128) % 256, i % 256, i % 256)))
+                                        using (Font font = new Font("arial", 14))
+                                        using (StringFormat sf = new StringFormat())
+                                            GGI.DrawString(i.ToString(), font, br, (float)a.Vertices[i].X * Scaler + (float)N.X * 20.0f, (float)a.Vertices[i].Y * Scaler + (float)N.Y * 20.0f, sf);
+                                    }
+                                    using (Pen p = new Pen(Color.DarkGreen, 1.0f)) {
+                                        for (int i = 0; i < DebugN.Count; i += 2)
+                                        {
+                                            GGI.DrawLine(p, (DebugN[i] * Scaler).ToF(), (DebugN[i + 1] * Scaler).ToF());
+                                        }
+                                    }
+                                    OutB.Save("testout.png");
                                 }
-                                for (int i = 0; i < DebugN.Count; i += 2)
-                                {
-                                    GGI.DrawLine(new Pen(Color.DarkGreen, 1.0f), (DebugN[i] * Scaler).ToF(), (DebugN[i + 1] * Scaler).ToF());
-                                }
-                                OutB.Save("testout.png");
                             }
-
                         }
                         else
                         {
@@ -595,7 +601,7 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Vertices.AddRange(Paths[i].Vertices);
                             if (Paths[endmatch].Vertices.First() == Paths[endmatch].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Vertices.Count);
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
@@ -609,7 +615,7 @@ namespace GerberLibrary.Core
                             Paths[i].Vertices.AddRange(Paths[startmatch].Vertices);
                             if (Paths[i].Vertices.First() == Paths[i].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Vertices.Count);
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
@@ -657,7 +663,7 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Vertices.AddRange(Paths[i].Vertices);
                             if (Paths[endmatch].Vertices.First() == Paths[endmatch].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3c", Paths[endmatch].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 3c", Paths[endmatch].Vertices.Count);
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
@@ -671,7 +677,7 @@ namespace GerberLibrary.Core
                             Paths[i].Vertices.AddRange(Paths[startmatch].Vertices);
                             if (Paths[i].Vertices.First() == Paths[i].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3d", Paths[i].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 3d", Paths[i].Vertices.Count);
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
@@ -806,7 +812,7 @@ namespace GerberLibrary.Core
                         }
                         else
                         {
-                            var S2 = Paths[S.PathID].Vertices[Paths[S.PathID].Vertices.Count() - 2];
+                            var S2 = Paths[S.PathID].Vertices[Paths[S.PathID].Vertices.Count - 2];
                             Dir2 = S2 - S.Point;
                             Dir2.Normalize();
                         }
@@ -840,7 +846,7 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Vertices.AddRange(Paths[i].Vertices);
                             if (Paths[endmatch].Vertices.First() == Paths[endmatch].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4a", Paths[endmatch].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 4a", Paths[endmatch].Vertices.Count);
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
@@ -854,7 +860,7 @@ namespace GerberLibrary.Core
                             Paths[i].Vertices.AddRange(Paths[startmatch].Vertices);
                             if (Paths[i].Vertices.First() == Paths[i].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4b", Paths[i].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 4b", Paths[i].Vertices.Count);
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
@@ -904,7 +910,7 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Vertices.AddRange(Paths[i].Vertices);
                             if (Paths[endmatch].Vertices.First() == Paths[endmatch].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4c", Paths[endmatch].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 4c", Paths[endmatch].Vertices.Count);
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
@@ -918,7 +924,7 @@ namespace GerberLibrary.Core
                             Paths[i].Vertices.AddRange(Paths[startmatch].Vertices);
                             if (Paths[i].Vertices.First() == Paths[i].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4d", Paths[i].Vertices.Count());
+                                Console.WriteLine("closed path with {0} points during stage 4d", Paths[i].Vertices.Count);
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
@@ -1048,8 +1054,8 @@ namespace GerberLibrary.Core
                 return IsInPolygon(P, testPoint, false);
             }
             bool result = false;
-            int j = polygon.Count() - 1;
-            for (int i = 0; i < polygon.Count(); i++)
+            int j = polygon.Count - 1;
+            for (int i = 0; i < polygon.Count; i++)
             {
                 if (polygon[i].Y < testPoint.Y && polygon[j].Y >= testPoint.Y || polygon[j].Y < testPoint.Y && polygon[i].Y >= testPoint.Y)
                 {
@@ -1224,23 +1230,28 @@ namespace GerberLibrary.Core
         {
             if (minorGrid < 0) return;
 
-            Pen P = new Pen(System.Drawing.ColorTranslator.FromHtml("#c4e5ff"), PW * 0.5f);
-            for (float X = 0; X <= width; X += minorGrid)
+            using (Pen P = new Pen(System.Drawing.ColorTranslator.FromHtml("#c4e5ff"), PW * 0.5f))
             {
-                G.DrawLine(P, X, 0, X, height);
+                for (float X = 0; X <= width; X += minorGrid)
+                {
+                    G.DrawLine(P, X, 0, X, height);
+                }
+                for (float X = 0; X <= height; X += minorGrid)
+                {
+                    G.DrawLine(P, 0.0f, X, width, X);
+                }
             }
-            for (float X = 0; X <= height; X += minorGrid)
+
+            using (Pen P = new Pen(System.Drawing.ColorTranslator.FromHtml("#bad7ed"), PW))
             {
-                G.DrawLine(P, 0.0f, X, width, X);
-            }
-            P = new Pen(System.Drawing.ColorTranslator.FromHtml("#bad7ed"), PW);
-            for (float X = 0; X <= width; X += majorGrid)
-            {
-                G.DrawLine(P, X, 0, X, height);
-            }
-            for (float X = 0; X <= height; X += majorGrid)
-            {
-                G.DrawLine(P, 0.0f, X, width, X);
+                for (float X = 0; X <= width; X += majorGrid)
+                {
+                    G.DrawLine(P, X, 0, X, height);
+                }
+                for (float X = 0; X <= height; X += majorGrid)
+                {
+                    G.DrawLine(P, 0.0f, X, width, X);
+                }
             }
         }
     }
