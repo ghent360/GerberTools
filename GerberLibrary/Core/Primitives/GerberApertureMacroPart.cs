@@ -645,8 +645,8 @@ namespace GerberLibrary.Core.Primitives
                 {
                     Console.WriteLine("{0}", v[idx]);
                     xparambound = true;
-                    int neg = 0;
-                    if (v[idx][0] == '-') neg = 1;
+                    //int neg = 0;
+                    //if (v[idx][0] == '-') neg = 1;
                     xexpr = v[idx];
                 }
                 else
@@ -661,8 +661,8 @@ namespace GerberLibrary.Core.Primitives
                 {
                     Console.WriteLine("{0}", v[idx]);
                     yparambound = true;
-                    int neg = 0;
-                    if (v[idx][0] == '-') neg = 1;
+                    //int neg = 0;
+                    //if (v[idx][0] == '-') neg = 1;
                     yexpr = v[idx];
 
                 }

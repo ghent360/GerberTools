@@ -476,7 +476,7 @@ namespace Artwork
 
                 Mask.UnlockBits(srcData);
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
 
             }

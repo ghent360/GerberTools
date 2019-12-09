@@ -4,16 +4,11 @@ using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using Artwork;
 
 namespace TINRS_ArtWorkGenerator
 {
@@ -531,7 +526,7 @@ namespace TINRS_ArtWorkGenerator
 
         }
 
-        bool MouseDown = false;
+        new bool MouseDown = false;
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {

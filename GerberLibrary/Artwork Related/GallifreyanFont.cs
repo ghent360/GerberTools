@@ -11,7 +11,7 @@ namespace GerberLibrary
     public class GallifreyanFont
     {
 
-        public interface GraphicsInterface
+        public interface IGraphicsInterface
         {
             void stroke(Color strokecol);
             void strokeWeight(double p);
@@ -28,7 +28,7 @@ namespace GerberLibrary
 
         }
 
-        public class GerberWriter:GraphicsInterface
+        public class GerberWriter:IGraphicsInterface
         {
             bool DoFill = false;
             bool DoStroke = true;
@@ -104,7 +104,7 @@ namespace GerberLibrary
             }
         }
 
-        public class GraphicsWriter: GraphicsInterface
+        public class GraphicsWriter: IGraphicsInterface
         {
             bool DoFill = false;
             bool DoStroke = true;
@@ -145,7 +145,7 @@ namespace GerberLibrary
 
             System.Drawing.Color sfg = Color.Black;
             System.Drawing.Color ffg = Color.Blue;
-            System.Drawing.Color sbg = Color.White;        
+            //System.Drawing.Color sbg = Color.White;        
 
 
             public Graphics G;
@@ -200,12 +200,12 @@ namespace GerberLibrary
             }
         }
 
-        GraphicsInterface Target;
+        IGraphicsInterface Target;
         System.Drawing.Color fg = Color.DarkBlue;
         System.Drawing.Color bg = Color.White;        
 
 
-        public void DrawToInterface(GraphicsInterface Gi, string S, double width, double height)
+        public void DrawToInterface(IGraphicsInterface Gi, string S, double width, double height)
         {
             Target = Gi;
             sentenceRadius = Math.Min(width, height) / 3.0;
@@ -215,7 +215,7 @@ namespace GerberLibrary
             //            try
             //          {
 
-            transliterate(width, height);
+            Transliterate(width, height);
             //        }
             //      catch (Exception) { };
         }
@@ -232,35 +232,35 @@ namespace GerberLibrary
             ROUND
         }
         Random R = new Random();
-        double random(double min, double max)
+        double Random(double min, double max)
         {
             double rr = R.NextDouble();
             return rr * (max - min) + min;
         }
 
-        int random(int max)
+        int Random(int max)
         {
             return R.Next(max);
         }
 
 
-        double lerp(double a, double b, double c)
+        static double Lerp(double a, double b, double c)
         {
             return a + (b - a) * c;
         }
-        double dist(double x1, double y1, double x2, double y2)
+        static double Dist(double x1, double y1, double x2, double y2)
         {
             double dx = x2 - x1;
             double dy = y2 - y1;
             return Math.Sqrt(dx * dx + dy * dy);
         }
 
-        double map(double inp, double inplow, double inphigh, double outlow, double outhigh)
+        static double Map(double inp, double inplow, double inphigh, double outlow, double outhigh)
         {
             return ((inp - inplow) / (inphigh - inplow)) * (outhigh - outlow) + outlow;
         }
 
-        double constrain(double inp, double low, double high)
+        static double Constrain(double inp, double low, double high)
         {
             if (inp < low) return low;
             if (inp > high) return high;
@@ -271,7 +271,7 @@ namespace GerberLibrary
         double sentenceRadius = 256;
         string english = "";
 
-        void transliterate(double width, double height)
+        void Transliterate(double width, double height)
         {
             english = english.ToLower();
             english = english.Replace(" -", "-");
@@ -405,7 +405,7 @@ namespace GerberLibrary
             double maxRadius = 0;
             for (int i = 0; i < sentence.Count; i++)
             {
-                wordRadius.Add(constrain(sentenceRadius * sentence[i].Count / charCount * 1.2, 0, sentenceRadius / 2));
+                wordRadius.Add(Constrain(sentenceRadius * sentence[i].Count / charCount * 1.2, 0, sentenceRadius / 2));
                 if (wordRadius[i] > maxRadius)
                 {
                     maxRadius = wordRadius[i];
@@ -487,7 +487,7 @@ namespace GerberLibrary
                 }
                 angle1 = Math.Atan((y[i] - y[otherIndex]) / (x[i] - x[otherIndex]));
                 if (double.IsNaN(angle1)) angle1 = 0;
-                if (dist(x[i] + (Math.Cos(angle1) * 20), y[i] + (Math.Sin(angle1) * 20), x[otherIndex], y[otherIndex]) > dist(x[i], y[i], x[otherIndex], y[otherIndex]))
+                if (Dist(x[i] + (Math.Cos(angle1) * 20), y[i] + (Math.Sin(angle1) * 20), x[otherIndex], y[otherIndex]) > Dist(x[i], y[i], x[otherIndex], y[otherIndex]))
                 {
                     angle1 -= Math.PI;
                 }
@@ -505,7 +505,7 @@ namespace GerberLibrary
                     angle1 += Math.PI * 2.0;
                 }
                 angle1 = Math.PI * 2.0 - angle1;
-                int index = (int)Math.Round(map(angle1, 0, Math.PI * 2.0, 0, (double)(sentence[i].Count)));
+                int index = (int)Math.Round(Map(angle1, 0, Math.PI * 2.0, 0, (double)(sentence[i].Count)));
                 if (index == sentence[i].Count)
                 {
                     index = 0;
@@ -514,11 +514,11 @@ namespace GerberLibrary
                 if ((tempChar == 't' || tempChar == '$' || tempChar == 'r' || tempChar == 's' || tempChar == 'v' || tempChar == 'w') && type > 0)
                 {
                     nested[i, index] = true;
-                    wordRadius[i] = constrain(wordRadius[i] * 1.2, 0, maxRadius * scaleFactor);
-                    while (dist(x[i], y[i], x[otherIndex], y[otherIndex]) > wordRadius[i] + wordRadius[otherIndex])
+                    wordRadius[i] = Constrain(wordRadius[i] * 1.2, 0, maxRadius * scaleFactor);
+                    while (Dist(x[i], y[i], x[otherIndex], y[otherIndex]) > wordRadius[i] + wordRadius[otherIndex])
                     {
-                        x[i] = lerp(x[i], x[otherIndex], 0.05);
-                        y[i] = lerp(y[i], y[otherIndex], 0.05);
+                        x[i] = Lerp(x[i], x[otherIndex], 0.05);
+                        y[i] = Lerp(y[i], y[otherIndex], 0.05);
                     }
                 }
             }
@@ -838,7 +838,7 @@ namespace GerberLibrary
                                 nextIndex = i + 1;
                             }
                             double angle1 = Math.Atan((y[i] - y[nextIndex]) / (x[i] - x[nextIndex]));
-                            if (dist(x[i] + (Math.Cos(angle1) * 20), y[i] + (Math.Sin(angle1) * 20), x[nextIndex], y[nextIndex]) > dist(x[i], y[i], x[nextIndex], y[nextIndex]))
+                            if (Dist(x[i] + (Math.Cos(angle1) * 20), y[i] + (Math.Sin(angle1) * 20), x[nextIndex], y[nextIndex]) > Dist(x[i], y[i], x[nextIndex], y[nextIndex]))
                             {
                                 angle1 -= Math.PI;
                             }
@@ -1042,7 +1042,7 @@ namespace GerberLibrary
                     bool b = false;
                     for (int k = 0; k < lineLengths.Count; k++)
                     {
-                        if (lineLengths[k] == dist(lineX[i], lineY[i], lineX[j], lineY[j]) + lineX[i] + lineY[i] + lineX[j] + lineY[j])
+                        if (lineLengths[k] == Dist(lineX[i], lineY[i], lineX[j], lineY[j]) + lineX[i] + lineY[i] + lineX[j] + lineY[j])
                         {
                             b = true;
                             break;
@@ -1053,7 +1053,7 @@ namespace GerberLibrary
                         continue;
                     }
                     double angle1 = Math.Atan((lineY[i] - lineY[j]) / (lineX[i] - lineX[j]));
-                    if (dist(lineX[i] + (Math.Cos(angle1) * 20), lineY[i] + (Math.Sin(angle1) * 20), lineX[j], lineY[j]) > dist(lineX[i], lineY[i], lineX[j], lineY[j]))
+                    if (Dist(lineX[i] + (Math.Cos(angle1) * 20), lineY[i] + (Math.Sin(angle1) * 20), lineX[j], lineY[j]) > Dist(lineX[i], lineY[i], lineX[j], lineY[j]))
                     {
                         angle1 -= Math.PI;
                     }
@@ -1083,7 +1083,7 @@ namespace GerberLibrary
                 {
                     double a;
 
-                    a = random(arcBegin[i], arcEnd[i]);
+                    a = Random(arcBegin[i], arcEnd[i]);
 
                     double d = 0;
                     double tempX = lineX[i] + Math.Cos(a) * d;
@@ -1100,12 +1100,12 @@ namespace GerberLibrary
                 {
                     int r;
 
-                    r = (int)Math.Floor((double)random((int)indexes.Count()));
+                    r = (int)Math.Floor((double)Random((int)indexes.Count()));
 
                     int j = indexes[r];
                     double a = angles[r] + Math.PI;
                     Target.line(lineX[i] + Math.Cos(a) * lineRad[i] / 2, lineY[i] + Math.Sin(a) * lineRad[i] / 2, lineX[j] + Math.Cos(a + Math.PI) * lineRad[j] / 2, lineY[j] + Math.Sin(a + Math.PI) * lineRad[j] / 2);
-                    lineLengths.Add(dist(lineX[i], lineY[i], lineX[j], lineY[j]) + lineX[i] + lineY[i] + lineX[j] + lineY[j]);
+                    lineLengths.Add(Dist(lineX[i], lineY[i], lineX[j], lineY[j]) + lineX[i] + lineY[i] + lineX[j] + lineY[j]);
                     List<double> templineX = new List<double>();
                     List<double> templineY = new List<double>();
                     List<double> temparcBegin = new List<double>();
@@ -1155,7 +1155,7 @@ namespace GerberLibrary
         {
             double theta;
             double omega = 0;
-            double d = dist(mX, mY, nX, nY);
+            double d = Dist(mX, mY, nX, nY);
             theta = Math.Acos((Math.Pow(r1, 2) - Math.Pow(r2, 2) + Math.Pow(d, 2)) / (2 * d * r1));
             if (nX - mX < 0)
             {

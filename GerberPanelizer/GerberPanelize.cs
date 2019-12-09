@@ -143,7 +143,7 @@ namespace GerberCombinerBuilder
             return;
 
             // todo -> redo these in pure GL.. windows controls interfere too much with the drawing resulting in glitches. 
-
+/*
             if (SelectedInstance != null)
             {
                 GerberInstance GI = SelectedInstance as GerberInstance;
@@ -174,6 +174,7 @@ namespace GerberCombinerBuilder
                 RotateRightHover.Visible = false;
 
             }
+*/
         }
 
         internal void SetSelectedInstance(AngledThing gerberInstance)

@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GerberLibrary;
-using GerberLibrary;
 using GerberLibrary.Core.Primitives;
 
 namespace ProductionFrame

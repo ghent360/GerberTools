@@ -206,7 +206,10 @@ namespace GerberLibrary.Core.Primitives
             return new PointD(X, Y);
         }
 
-        
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() ^ Y.GetHashCode();
+        }
     }
 
 }

@@ -48,6 +48,7 @@ namespace GerberToDXF
                     pl.Color = new AciColor(System.Drawing.Color.Green);
                     dxf.AddEntity(pl);
                 }
+            /*
             if (false) foreach (var a in PLS.Shapes)
                 {
 
@@ -60,7 +61,7 @@ namespace GerberToDXF
                     pl.Color = new AciColor(System.Drawing.Color.Red);
                     dxf.AddEntity(pl);
                 }
-
+            */
             // save to file
             dxf.Save(to);
 

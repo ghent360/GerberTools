@@ -357,7 +357,7 @@ namespace Artwork
             //}
 
            
-            return new vec2(0,0); // No collision
+            //return new vec2(0,0); // No collision
 
         }
 
@@ -1402,9 +1402,9 @@ namespace Artwork
                 Ps[2].Y = (float)C.y;
 
 
-                bool dAB = false;
-                bool dBC = false;
-                bool dCA = false;
+                //bool dAB = false;
+                //bool dBC = false;
+                //bool dCA = false;
 
                 Color Cl = Color.Red;
                 Color Cl2 = Color.FromArgb(100, 0, 0, 0);
@@ -1415,9 +1415,9 @@ namespace Artwork
                     //                    case 2: dAB = true; dBC = true; dCA = true; Cl = Color.FromArgb(0xfc, 0xca, 0x64); Cl = Color.FromArgb(200,255,255); break;
                     //Cl2 = Color.Yellow; 
 
-                    case 0: dAB = false; dBC = false; dCA = false; Cl = Color.FromArgb(0xff, 0xcc, 0xca, 0xe4); break;
-                    case 1: dAB = true; dBC = false; dCA = false; Cl = Color.FromArgb(0xff, 0xfc, 0x66, 0x13); break;
-                    case 2: dAB = true; dBC = true; dCA = true; Cl = Color.FromArgb(0xfc, 0xca, 0x64); break;
+                    case 0: /*dAB = false; dBC = false; dCA = false;*/ Cl = Color.FromArgb(0xff, 0xcc, 0xca, 0xe4); break;
+                    case 1: /*dAB = true; dBC = false; dCA = false;*/ Cl = Color.FromArgb(0xff, 0xfc, 0x66, 0x13); break;
+                    case 2: /*dAB = true; dBC = true; dCA = true;*/ Cl = Color.FromArgb(0xfc, 0xca, 0x64); break;
 
                     case 5: Cl = Color.Red; break;
                 }
@@ -1448,14 +1448,15 @@ namespace Artwork
                 G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                 G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 
+                /*
                 if (false)
                 {
                     drawdot(G, A, B, dAB, Cen);
                     drawdot(G, B, C, dBC, Cen);
                     drawdot(G, C, A, dCA, Cen);
                 }
-
-            }
+                */
+                }
 
             private void drawdot(Graphics G, vec2 A, vec2 B, bool dAB, vec2 Cen)
             {

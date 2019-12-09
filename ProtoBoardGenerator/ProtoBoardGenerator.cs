@@ -38,7 +38,7 @@ namespace ProtoBoardGenerator
             int polyid = 0;
             List<String> FilesGenerated = new List<string>();
             double LabelHeight = 1.2;
-            double PadWidth = 1.8;
+            //double PadWidth = 1.8;
             double DrillWidth = 1.0;
 
             string basename = String.Format("Generated_This_is_not_RocketScience_Flower_prototoboard_{0}x{1}cm", width / 10.0f, height / 10.0f);

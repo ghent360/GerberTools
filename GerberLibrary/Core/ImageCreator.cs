@@ -223,7 +223,7 @@ namespace GerberLibrary
                         FS.CopyTo(MS2);
                         MS2.Seek(0, SeekOrigin.Begin);
                         AddFileToSet(MS2, a, Logger);
-                    }catch(Exception E)
+                    } catch(Exception)
                     {
                         Logger.AddString(String.Format("Failed to add file! {0}", a));
                     }

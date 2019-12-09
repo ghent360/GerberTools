@@ -41,7 +41,7 @@ namespace GerberLibrary
             PrototypeEdge
         }
 
-        public class Functions
+        public static class Functions
         {
             public static void CreateArtLayersForFolder(string foldername, ArtLayerStyle Style)
             {
@@ -538,7 +538,7 @@ namespace GerberLibrary
 
                 {
                     int img = 0;
-                    int forceiter = 0;
+                    //int forceiter = 0;
                     RD_Elem[] FieldA = new RD_Elem[iW * iH];
                     RD_Elem[] FieldB = new RD_Elem[iW * iH];
                     Random R = new Random(0);
@@ -585,9 +585,6 @@ namespace GerberLibrary
 
                         //TheBounceInterface.RD_Bounce(FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
                         //TheBounceInterface.RD_Bounce(FieldB, FieldA, iW, iH, feedrate, killrate, DistanceFieldBlur);
-
-
-
 
                         if (i % 100 == 0)
                         {
@@ -684,10 +681,6 @@ namespace GerberLibrary
                         */
 
                     }
-
-
-
-
                 }
 
                 Console.WriteLine("Converting to gerber..");

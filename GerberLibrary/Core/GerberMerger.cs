@@ -61,6 +61,7 @@ namespace GerberLibrary
                 if (File.Exists(output)) File.Delete(output);
                 File.Move(LeftOverFiles[0], output);
             }
+            /*
             else
             {
 
@@ -75,6 +76,7 @@ namespace GerberLibrary
                 if (File.Exists(output)) File.Delete(output);
                 Merge(LastFile, Files.Last(), output, Log);
             }
+            */
             Log.AddString("Removing merge tempfiles");
             foreach (string s in TempFiles)
             {

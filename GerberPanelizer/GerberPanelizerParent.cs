@@ -15,7 +15,7 @@ namespace GerberCombinerBuilder
 {
     public partial class GerberPanelizerParent : Form
     {
-        private int childFormNumber = 0;
+        //private int childFormNumber = 0;
 
         public Treeview TV;
         public InstanceDialog ID;
