@@ -136,7 +136,7 @@ namespace GerberLibrary
                 }
             }
         }
-        public class MergeLog : ProgressLog
+        public class MergeLog : IProgressLog
         {
             public void AddString(string text, float progress = -1)
             {
@@ -680,9 +680,15 @@ namespace GerberLibrary
                     string L = F[i];
                     if (L.Contains("%FS")) return BoardFileType.Gerber;
                     if (L.Contains("M48")) return BoardFileType.Drill;
+                    if (L.Contains("Ref")
+                        && L.Contains("Val")
+                        && L.Contains("Package")
+                        && L.Contains("PosX")
+                        && L.Contains("PosY")
+                        && L.Contains("Rot") 
+                        && L.Contains("Side")) return BoardFileType.PlaceKicad;
+                    if (L.Contains("Ref,Val,Package,PosX,PosY,Rot,Side")) return BoardFileType.PlaceCsv;
                 };
-
-
             }
             catch (Exception E)
             {
@@ -694,8 +700,6 @@ namespace GerberLibrary
             }
 
             return BoardFileType.Unsupported;
-
-
         }
 
         public static BoardFileType FindFileTypeFromStream(StreamReader l, string filename)
@@ -708,7 +712,6 @@ namespace GerberLibrary
             {
                 if (ext == s)
                 {
-
                     return BoardFileType.Unsupported;
                 }
             }
@@ -722,15 +725,20 @@ namespace GerberLibrary
                 }
                 //var F = File.ReadAllLines(filename);
 
-
                 for (int i = 0; i < lines.Count; i++)
                 {
                     string L = lines[i];
                     if (L.Contains("%FS")) return BoardFileType.Gerber;
                     if (L.Contains("M48")) return BoardFileType.Drill;
+                    if (L.Contains("Ref")
+                        && L.Contains("Val")
+                        && L.Contains("Package")
+                        && L.Contains("PosX")
+                        && L.Contains("PosY")
+                        && L.Contains("Rot")
+                        && L.Contains("Side")) return BoardFileType.PlaceKicad;
+                    if (L.Contains("Ref,Val,Package,PosX,PosY,Rot,Side")) return BoardFileType.PlaceCsv;
                 };
-
-
             }
             catch (Exception)
             {
@@ -738,7 +746,6 @@ namespace GerberLibrary
             }
 
             return BoardFileType.Unsupported;
-
         }
 
         public static Bounds GetBoundingBox(List<string> generatedFiles)

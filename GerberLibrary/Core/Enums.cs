@@ -59,6 +59,8 @@ namespace GerberLibrary.Core
     {
         Gerber,
         Drill,
+        PlaceKicad,
+        PlaceCsv,
         Unsupported
     }
 }

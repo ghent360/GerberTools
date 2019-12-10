@@ -82,7 +82,7 @@ namespace GerberCombinerBuilder
 
             {
                 GerberInstance GI = TargetInstance.SelectedInstance as GerberInstance;
-                GI.RebuildTransformed(TargetInstance.ThePanel.GerberOutlines[GI.GerberPath], TargetInstance.ThePanel.TheSet.ExtraTabDrillDistance);
+                GI.RebuildTransformed(TargetInstance.ThePanel.gerberOutlines[GI.GerberPath], TargetInstance.ThePanel.theSet.ExtraTabDrillDistance);
             }
             
             TargetInstance.UpdateHoverControls();

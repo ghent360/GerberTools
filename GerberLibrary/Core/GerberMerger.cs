@@ -11,7 +11,7 @@ namespace GerberLibrary
 {
     public static class GerberMerger
     {
-        public static void MergeAll(List<string> Files, string output, ProgressLog Log)
+        public static void MergeAll(List<string> Files, string output, IProgressLog Log)
         {
             if (Files.Count > 2)
             {
@@ -89,7 +89,7 @@ namespace GerberLibrary
 
         }
 
-        public static void MultiMerge(string file1, List<string> filestomergein, string output, ProgressLog Log)
+        public static void MultiMerge(string file1, List<string> filestomergein, string output, IProgressLog Log)
         {
             if (File.Exists(file1) == false)
             {
@@ -621,7 +621,7 @@ namespace GerberLibrary
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
         }
 
-        private static void CheckAllApertures(ParsedGerber file1Parsed, List<string> File1Lines, ProgressLog Log)
+        private static void CheckAllApertures(ParsedGerber file1Parsed, List<string> File1Lines, IProgressLog Log)
         {
             
             for (int i = 0; i < File1Lines.Count; i++)
@@ -678,7 +678,7 @@ namespace GerberLibrary
             }
         }
 
-        public static void Merge(string file1, string file2, string output, ProgressLog Log)
+        public static void Merge(string file1, string file2, string output, IProgressLog Log)
         {
             if (File.Exists(file1) == false)
             {
@@ -1193,7 +1193,7 @@ namespace GerberLibrary
         }
 
 
-        public static void WriteContainedOnly(string inputfile,PolyLine Boundary, string outputfilename, ProgressLog Log)
+        public static void WriteContainedOnly(string inputfile,PolyLine Boundary, string outputfilename, IProgressLog Log)
         {
             if (File.Exists(inputfile) == false)
             {

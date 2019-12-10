@@ -13,7 +13,7 @@ using System.IO;
 
 namespace FitBitmapToOutlineAndMerge
 {
-    public partial class FitBitmapToOutlineAndMergeForm : Form, ProgressLog
+    public partial class FitBitmapToOutlineAndMergeForm : Form, IProgressLog
     {
         public FitBitmapToOutlineAndMergeForm()
         {

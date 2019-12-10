@@ -20,30 +20,30 @@ namespace GerberCombinerBuilder
             InitializeComponent();
             ParentPanel = ThePanel;
 
-            WidthBox.Value = (decimal)ParentPanel.TheSet.Width;
-            HeightBox.Value = (decimal)ParentPanel.TheSet.Height;
-            MarginBox.Value = (decimal)ParentPanel.TheSet.MarginBetweenBoards;
-            ClipToOutlines.Checked = ParentPanel.TheSet.ClipToOutlines;
-            filloffsetbox.Value = (decimal)ParentPanel.TheSet.FillOffset;
-            smoothoffsetbox.Value= (decimal)ParentPanel.TheSet.Smoothing;
-            ExtraTabDrillDistance.Value = (decimal)ParentPanel.TheSet.ExtraTabDrillDistance;
-            FillEmpty.Checked = ParentPanel.TheSet.ConstructNegativePolygon;
-            noMouseBites.Checked = ParentPanel.TheSet.DoNotGenerateMouseBites;
-            mergebyfiletypebox.Checked = ParentPanel.TheSet.MergeFileTypes;
+            WidthBox.Value = (decimal)ParentPanel.theSet.Width;
+            HeightBox.Value = (decimal)ParentPanel.theSet.Height;
+            MarginBox.Value = (decimal)ParentPanel.theSet.MarginBetweenBoards;
+            ClipToOutlines.Checked = ParentPanel.theSet.ClipToOutlines;
+            filloffsetbox.Value = (decimal)ParentPanel.theSet.FillOffset;
+            smoothoffsetbox.Value= (decimal)ParentPanel.theSet.Smoothing;
+            ExtraTabDrillDistance.Value = (decimal)ParentPanel.theSet.ExtraTabDrillDistance;
+            FillEmpty.Checked = ParentPanel.theSet.ConstructNegativePolygon;
+            noMouseBites.Checked = ParentPanel.theSet.DoNotGenerateMouseBites;
+            mergebyfiletypebox.Checked = ParentPanel.theSet.MergeFileTypes;
         }
 
         private void OkButton(object sender, EventArgs e)
         {
-            ParentPanel.TheSet.Width = (double)WidthBox.Value;
-            ParentPanel.TheSet.Height = (double)HeightBox.Value;
-            ParentPanel.TheSet.MarginBetweenBoards = (double)MarginBox.Value;
-            ParentPanel.TheSet.ConstructNegativePolygon = FillEmpty.Checked;
-            ParentPanel.TheSet.ExtraTabDrillDistance = (double) ExtraTabDrillDistance.Value;
-            ParentPanel.TheSet.FillOffset = (double)filloffsetbox.Value;
-            ParentPanel.TheSet.Smoothing = (double)smoothoffsetbox.Value;
-            ParentPanel.TheSet.DoNotGenerateMouseBites = noMouseBites.Checked;
-            ParentPanel.TheSet.ClipToOutlines = ClipToOutlines.Checked;
-            ParentPanel.TheSet.MergeFileTypes = mergebyfiletypebox.Checked;
+            ParentPanel.theSet.Width = (double)WidthBox.Value;
+            ParentPanel.theSet.Height = (double)HeightBox.Value;
+            ParentPanel.theSet.MarginBetweenBoards = (double)MarginBox.Value;
+            ParentPanel.theSet.ConstructNegativePolygon = FillEmpty.Checked;
+            ParentPanel.theSet.ExtraTabDrillDistance = (double) ExtraTabDrillDistance.Value;
+            ParentPanel.theSet.FillOffset = (double)filloffsetbox.Value;
+            ParentPanel.theSet.Smoothing = (double)smoothoffsetbox.Value;
+            ParentPanel.theSet.DoNotGenerateMouseBites = noMouseBites.Checked;
+            ParentPanel.theSet.ClipToOutlines = ClipToOutlines.Checked;
+            ParentPanel.theSet.MergeFileTypes = mergebyfiletypebox.Checked;
             Close();
         }
 

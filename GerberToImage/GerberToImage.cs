@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace GerberToImage
 {
-    class GerberToImage: ProgressLog
+    class GerberToImage: IProgressLog
     {
         [STAThread]
         static void Main(string[] args)

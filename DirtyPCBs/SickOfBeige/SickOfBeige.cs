@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SickOfBeige
 {
-    class SickOfBeige : GerberLibrary.ProgressLog
+    class SickOfBeige : GerberLibrary.IProgressLog
     {
         enum Arguments
         {

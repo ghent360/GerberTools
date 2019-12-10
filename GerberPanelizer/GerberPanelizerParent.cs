@@ -218,7 +218,7 @@ namespace GerberCombinerBuilder
         {
             if (ActivePanelizeInstance != null)
             {
-                ActivePanelizeInstance.exportAllGerbersToolStripMenuItem_Click(null, null);
+                ActivePanelizeInstance.ExportAllGerbersToolStripMenuItem_Click(null, null);
             }
         }
 
@@ -243,7 +243,7 @@ namespace GerberCombinerBuilder
                  childForm.MdiParent = this;
                  childForm.Show();
                  childForm.ZoomToFit();
-                 childForm.glControl1_DragDrop(sender, e);
+                 childForm.GlControl1_DragDrop(sender, e);
                  ActivePanelizeInstance = childForm;
                  childForm.ThePanel.MaxRectPack();
                     childForm.ThePanel.BuildAutoTabs();

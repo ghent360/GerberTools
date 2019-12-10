@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace DirtyPCB_BoardRender
 {
-    class DirtyPCB_BoardRender : ProgressLog
+    class DirtyPCB_BoardRender : IProgressLog
     {
         enum Arguments
         {

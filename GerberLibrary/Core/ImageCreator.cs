@@ -38,7 +38,7 @@ namespace GerberLibrary
             return null;
         }
 
-        public void ClipBoard(string infile, string outputfile, ProgressLog log)
+        public void ClipBoard(string infile, string outputfile, IProgressLog log)
         {
             var toclip = GetGerberByName(infile);
             if (toclip== null)
@@ -158,7 +158,7 @@ namespace GerberLibrary
             return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
         }
 
-        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, ProgressLog Logger = null)
+        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, IProgressLog Logger = null)
         {
             foreach (var a in FileList)
             {
@@ -392,7 +392,7 @@ namespace GerberLibrary
             PLSs.Add(PLS);
         }
 
-        public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
+        public void DrawAllFiles(string v1, double dpi, IProgressLog Logger = null)
         {
 
             scale = dpi / 25.4d; // dpi
@@ -443,7 +443,7 @@ namespace GerberLibrary
             }
         }
 
-        public string DrawToFile(string basefilename, BoardSide CurrentLayer, double dpi = 400, bool showimage = true, ProgressLog Logger = null)
+        public string DrawToFile(string basefilename, BoardSide CurrentLayer, double dpi = 400, bool showimage = true, IProgressLog Logger = null)
         {
             using (Bitmap B = DrawBoard(dpi, CurrentLayer, ActiveColorSet, basefilename, Logger))
             {
@@ -492,7 +492,7 @@ namespace GerberLibrary
             ActiveColorSet = colors;
         }
 
-        public void WriteImageFiles(string TargetFileBaseName, double dpi = 200, bool showimage = true, ProgressLog Logger = null)
+        public void WriteImageFiles(string TargetFileBaseName, double dpi = 200, bool showimage = true, IProgressLog Logger = null)
         {
             if (Logger != null) Logger.AddString("Build top layer image");
             DrawToFile(TargetFileBaseName, BoardSide.Top, dpi, showimage, Logger);
@@ -500,7 +500,7 @@ namespace GerberLibrary
             DrawToFile(TargetFileBaseName, BoardSide.Bottom, dpi, showimage, Logger);
         }
 
-        private void AddFileToSet(string aname, ProgressLog Logger, double drillscaler = 1.0)
+        private void AddFileToSet(string aname, IProgressLog Logger, double drillscaler = 1.0)
         {
             if (Streams.ContainsKey(aname))
             {
@@ -512,7 +512,7 @@ namespace GerberLibrary
             }
         }
 
-        private void AddFileToSet(MemoryStream MS, string aname, ProgressLog Logger, double drillscaler = 1.0)
+        private void AddFileToSet(MemoryStream MS, string aname, IProgressLog Logger, double drillscaler = 1.0)
         {
 
             Streams[aname] = MS;
@@ -741,7 +741,7 @@ namespace GerberLibrary
                 B2.Save("44 outlines_4afterinside.png");
         }
 
-        private void CheckForOutlineFiles(ProgressLog Logger)
+        private void CheckForOutlineFiles(IProgressLog Logger)
         {
             List<ParsedGerber> Outlines = new List<ParsedGerber>();
             List<ParsedGerber> Mills = new List<ParsedGerber>();
@@ -813,7 +813,7 @@ namespace GerberLibrary
             }
         }
 
-        private void CheckRelativeBoundingBoxes(ProgressLog Logger)
+        private void CheckRelativeBoundingBoxes(IProgressLog Logger)
         {
 
 
@@ -857,7 +857,7 @@ namespace GerberLibrary
 
         }
 
-        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, BoardRenderColorSet Colors, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
+        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, BoardRenderColorSet Colors, string basefilename = null, IProgressLog Logger = null, bool ForceWhite = false)
         {
             scale = dpi / 25.4d; // dpi
             var OutlineBoundingBox = GetOutlineBoundingBox();
@@ -1333,7 +1333,7 @@ namespace GerberLibrary
             }
         }
 
-        private void FixEagleDrillExportIssues(ProgressLog Logger)
+        private void FixEagleDrillExportIssues(IProgressLog Logger)
         {
             if (Gerber.SkipEagleDrillFix == true) { Logger.AddString("skipping eagle fix"); return; };
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();

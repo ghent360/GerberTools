@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GerberClipper
 {
-    class GerberClipper: ProgressLog
+    class GerberClipper: IProgressLog
     {
         static void Main(string[] args)
         {

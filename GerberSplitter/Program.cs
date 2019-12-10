@@ -13,7 +13,7 @@ namespace GerberSplitter
     class Program
     {
 
-        internal class log : ProgressLog
+        internal class log : IProgressLog
         {
             public void AddString(string text, float progress = -1F)
             {

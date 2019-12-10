@@ -36,6 +36,8 @@ namespace GerberCombinerBuilder
         private float DrawingScale;
         public double Zoom = 1;
         public PointD CenterPoint = new PointD(0, 0);
+        PointD LastMouseMove = new PointD(0, 0);
+        public bool SuspendRedraw = false;
 
         enum SnapMode
         {
@@ -53,7 +55,10 @@ namespace GerberCombinerBuilder
         Treeview TV;
         public AngledThing SelectedInstance;
         InstanceDialog ID;
-
+        private string BaseName = "Untitled";
+        private bool ShapeMarkedForUpdate = true;
+        private bool ForceShapeUpdate = false;
+        public bool AutoUpdate = false;
 
         public GerberPanelize(GerberPanelizerParent Host, Treeview tv, InstanceDialog id)
         {
@@ -69,7 +74,7 @@ namespace GerberCombinerBuilder
             //   TheSet.Tabs.Add(new BreakTab() { Radius = 5, Angle = 10, Center = new PointF(50,50) });
             TV = tv;
             ID = id;
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / 110.0f;
 
             ZoomToFit();
@@ -102,7 +107,7 @@ namespace GerberCombinerBuilder
 
         //}
 
-            PointD MMToMouse(PointD MM)
+        PointD MMToMouse(PointD MM)
         {
             PointD P = new PointD(MM.X, MM.Y);
             P.X -= (float)CenterPoint.X;
@@ -116,11 +121,7 @@ namespace GerberCombinerBuilder
             P.X += glControl1.Width / 2;
             P.Y += glControl1.Height / 2;
 
-
-            
             return P;
-
-
         }
 
         PointD MouseToMM(PointD Mouse)
@@ -135,7 +136,6 @@ namespace GerberCombinerBuilder
             P.Y += (float)CenterPoint.Y;
 
             return P;
-
         }
 
         public void UpdateHoverControls()
@@ -189,9 +189,6 @@ namespace GerberCombinerBuilder
         }
 
 
-        private string BaseName = "Untitled";
-        private bool ShapeMarkedForUpdate = true;
-        private bool ForceShapeUpdate = false;
         internal void Redraw(bool refreshshape = true, bool force = false)
         {
             if (SuspendRedraw) return;
@@ -211,7 +208,7 @@ namespace GerberCombinerBuilder
             Redraw(false);
         }
 
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -226,7 +223,7 @@ namespace GerberCombinerBuilder
             LoadedFile = filename;
             ThePanel.LoadFile(filename);
             ThePanel.UpdateShape(); 
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             ZoomToFit();
 
             Redraw(false);
@@ -235,7 +232,7 @@ namespace GerberCombinerBuilder
             BuildTitle();
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -246,34 +243,30 @@ namespace GerberCombinerBuilder
         }
 
 
-        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SelectedInstance = null;
             HoverShape = null;
             ThePanel = new GerberPanel();
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             Redraw(true);
         }
-
 
         private void AddTab(PointD center)
         {
 
             var BT = ThePanel.AddTab(MouseToMM(center));
 
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             SetSelectedInstance(BT);
             Redraw(true);
         }
 
-
-
-
-        public void exportAllGerbersToolStripMenuItem_Click(object sender, EventArgs e)
+        public void ExportAllGerbersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                folderBrowserDialog2.SelectedPath = ThePanel.TheSet.LastExportFolder;
+                folderBrowserDialog2.SelectedPath = ThePanel.theSet.LastExportFolder;
             }
             catch (Exception)
             {
@@ -297,7 +290,6 @@ namespace GerberCombinerBuilder
             ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, ProgressDialog);
         }
 
-
         internal void ProcessDone()
         {
             this.Enabled = true;
@@ -311,7 +303,7 @@ namespace GerberCombinerBuilder
         private void GerberPanelize_Activated(object sender, EventArgs e)
         {
             ID.UpdateBoxes(this);
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             ParentFrame.ActivatePanelizer(this);
         }
 
@@ -329,7 +321,7 @@ namespace GerberCombinerBuilder
         {
 
             SetSelectedInstance(ThePanel.AddInstance(path, MouseToMM(coord)));
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             Redraw(true);
         }
 
@@ -347,7 +339,7 @@ namespace GerberCombinerBuilder
             }
 
             ThePanel.RemoveInstance(angledThing);
-            TV.BuildTree(this, ThePanel.TheSet);
+            TV.BuildTree(this, ThePanel.theSet);
             Redraw(true);
         }
 
@@ -388,9 +380,9 @@ namespace GerberCombinerBuilder
                 else
                 {
                     addInstanceToolStripMenuItem.DropDownItems.Clear();
-                    foreach (var a in ThePanel.TheSet.LoadedOutlines)
+                    foreach (var a in ThePanel.theSet.LoadedOutlines)
                     {
-                        addInstanceToolStripMenuItem.DropDownItems.Add(a, null, addinstance);
+                        addInstanceToolStripMenuItem.DropDownItems.Add(a, null, AddInstance);
                     }
                     contextMenuStrip1.Show(this, e.Location);
                 }
@@ -398,14 +390,14 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void addinstance(object sender, EventArgs e)
+        private void AddInstance(object sender, EventArgs e)
         {
             ToolStripDropDownItem TSDDI = sender as ToolStripDropDownItem;
             AddInstance(TSDDI.Text, ContextStartCoord);
             //Console.WriteLine(sender.GetType().ToString());
         }
 
-        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             DoMouseUp(e);
         }
@@ -434,7 +426,7 @@ namespace GerberCombinerBuilder
                         var GI = SelectedInstance as GerberInstance;
                         if (GI != null)
                         {
-                            GI.RebuildTransformed(ThePanel.GerberOutlines[GI.GerberPath], ThePanel.TheSet.ExtraTabDrillDistance);
+                            GI.RebuildTransformed(ThePanel.gerberOutlines[GI.GerberPath], ThePanel.theSet.ExtraTabDrillDistance);
 
                         }
                     }
@@ -442,9 +434,6 @@ namespace GerberCombinerBuilder
                 }
             }
         }
-
-        PointD LastMouseMove = new PointD(0, 0);
-        public bool SuspendRedraw = false;
 
         private void DoMouseMove(MouseEventArgs e)
         {
@@ -505,19 +494,19 @@ namespace GerberCombinerBuilder
 
         }
 
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance != null) RemoveInstance(SelectedInstance);
         }
 
-        private void addBreakTabToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AddBreakTabToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AddTab(ContextStartCoord);
         }
 
 
 
-        private void milToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void MilToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             UpdateSnapBox(SnapMode.Mil50);
         }
@@ -539,25 +528,25 @@ namespace GerberCombinerBuilder
             toolStripDropDownButton1.Text = "Snap: " + name;
         }
 
-        private void milToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MilToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UpdateSnapBox(SnapMode.Mil100);
 
         }
 
-        private void mmToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MmToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UpdateSnapBox(SnapMode.MM1);
 
         }
 
-        private void mmToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void MmToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             UpdateSnapBox(SnapMode.MM05);
 
         }
 
-        private void offToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OffToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SnapOff();
         }
@@ -569,15 +558,15 @@ namespace GerberCombinerBuilder
 
         public void ZoomToFit()
         {
-            if (ThePanel.TheSet.Width > 0 && ThePanel.TheSet.Height > 0 && glControl1.Width > 0 && glControl1.Height > 0)
+            if (ThePanel.theSet.Width > 0 && ThePanel.theSet.Height > 0 && glControl1.Width > 0 && glControl1.Height > 0)
             {
-                double A1 = (ThePanel.TheSet.Width + 8) / (ThePanel.TheSet.Height + 8);
+                double A1 = (ThePanel.theSet.Width + 8) / (ThePanel.theSet.Height + 8);
                 double A2 = glControl1.Width / glControl1.Height;
 
-                Zoom = Math.Min(glControl1.Width / (ThePanel.TheSet.Width + 8), glControl1.Height / (ThePanel.TheSet.Height + 8));
+                Zoom = Math.Min(glControl1.Width / (ThePanel.theSet.Width + 8), glControl1.Height / (ThePanel.theSet.Height + 8));
 
-                CenterPoint.X = ThePanel.TheSet.Width / 2;
-                CenterPoint.Y = ThePanel.TheSet.Height / 2;
+                CenterPoint.X = ThePanel.theSet.Width / 2;
+                CenterPoint.Y = ThePanel.theSet.Height / 2;
             }
             else
             {
@@ -590,8 +579,8 @@ namespace GerberCombinerBuilder
 
         private void UpdateScrollers()
         {
-            double hratio = glControl1.Width / (ThePanel.TheSet.Width * Zoom);
-            double vratio = glControl1.Height / (ThePanel.TheSet.Height * Zoom);
+            double hratio = glControl1.Width / (ThePanel.theSet.Width * Zoom);
+            double vratio = glControl1.Height / (ThePanel.theSet.Height * Zoom);
 
             if (hratio > 1)
             {
@@ -599,7 +588,7 @@ namespace GerberCombinerBuilder
             }
             else
             {
-                double scrollablemm = (1 - hratio) * (ThePanel.TheSet.Width + 6);
+                double scrollablemm = (1 - hratio) * (ThePanel.theSet.Width + 6);
                 // Console.WriteLine("{0} mm in X", scrollablemm);
                 hScrollBar1.Maximum = (int)Math.Ceiling(scrollablemm);
                 hScrollBar1.LargeChange = 1;
@@ -616,7 +605,7 @@ namespace GerberCombinerBuilder
             }
             else
             {
-                double scrollablemm = (1 - vratio) * (ThePanel.TheSet.Height + 6);
+                double scrollablemm = (1 - vratio) * (ThePanel.theSet.Height + 6);
                 //  Console.WriteLine("{0} mm in Y", scrollablemm);
                 vScrollBar1.LargeChange = 1;
 
@@ -627,9 +616,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        public bool AutoUpdate = false;
-
-        private void glControl1_Paint(object sender, PaintEventArgs e)
+        private void GlControl1_Paint(object sender, PaintEventArgs e)
         {
             if (ShapeMarkedForUpdate && (AutoUpdate || ForceShapeUpdate))
             {
@@ -640,7 +627,7 @@ namespace GerberCombinerBuilder
             }
 
             glControl1.MakeCurrent();
-            DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / (float)(Math.Max(ThePanel.TheSet.Height, ThePanel.TheSet.Width) + 10);
+            DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / (float)(Math.Max(ThePanel.theSet.Height, ThePanel.theSet.Width) + 10);
             GraphicsInterface GI = (GraphicsInterface)new GLGraphicsInterface(0, 0, glControl1.Width, glControl1.Height);
 
             GL.MatrixMode(MatrixMode.Projection);
@@ -666,26 +653,26 @@ namespace GerberCombinerBuilder
             glControl1.SwapBuffers();
         }
 
-        private void glControl1_MouseDown(object sender, MouseEventArgs e)
+        private void GlControl1_MouseDown(object sender, MouseEventArgs e)
         {
             DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / 110.0f;
             DoMouseDown(e);
         }
 
-        private void glControl1_MouseMove(object sender, MouseEventArgs e)
+        private void GlControl1_MouseMove(object sender, MouseEventArgs e)
         {
             DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / 110.0f;
             DoMouseMove(e);
         }
 
-        private void glControl1_MouseUp(object sender, MouseEventArgs e)
+        private void GlControl1_MouseUp(object sender, MouseEventArgs e)
         {
             DrawingScale = Math.Min(glControl1.Width, glControl1.Height) / 110.0f;
             DoMouseUp(e);
         }
 
        
-        private void exportBoardImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExportBoardImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -715,7 +702,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        public void glControl1_DragDrop(object sender, DragEventArgs e)
+        public void GlControl1_DragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -734,7 +721,7 @@ namespace GerberCombinerBuilder
                         {
                             GerberInstance GI = new GerberInstance() { GerberPath = s };
                             GI.Center = DropPoint;
-                            ThePanel.TheSet.Instances.Add(GI);
+                            ThePanel.theSet.Instances.Add(GI);
                             SelectedInstance = GI;
                         }
                     }
@@ -743,12 +730,12 @@ namespace GerberCombinerBuilder
                         Console.WriteLine("Dropped item {0} is not a folder! ignoring!", S);
                     }
                 }
-                TV.BuildTree(this, ThePanel.TheSet);
+                TV.BuildTree(this, ThePanel.theSet);
                 Redraw(true, true);
             }
         }
 
-        private void glControl1_DragEnter(object sender, DragEventArgs e)
+        private void GlControl1_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -761,58 +748,58 @@ namespace GerberCombinerBuilder
         }
 
 
-        private void naiveRectanglePackerToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NaiveRectanglePackerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThePanel.RectanglePack();
             Redraw(true);
 
         }
 
-        private void maxRectsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MaxRectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThePanel.MaxRectPack();
             Redraw(true);
 
         }
 
-        private void panelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void PanelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             PanelProperties PP = new PanelProperties(ThePanel);
             PP.ShowDialog();
             Redraw(true);
         }
 
-        private void deleteAllBreaktabsWithErrorsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DeleteAllBreaktabsWithErrorsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThePanel.RemoveAllTabs(true);
             Redraw(true);
 
         }
 
-        private void insertBoardJoinToolStripMenuItem_Click_1(object sender, EventArgs e)
+        private void InsertBoardJoinToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             AddTab(new PointD(0, 0));
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             ThePanel.BuildAutoTabs();// GenerateTabLocations();
             Redraw(true);
         }
 
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem2_Click(object sender, EventArgs e)
         {
             ThePanel.RemoveAllTabs(false);
             Redraw(true);
         }
 
-        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem3_Click(object sender, EventArgs e)
         {
             ThePanel.RemoveAllTabs(true);
             Redraw(true);
         }
 
-        private void addGerberFolderToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void AddGerberFolderToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -820,15 +807,15 @@ namespace GerberCombinerBuilder
                 foreach (var s in R)
                 {
                     GerberInstance GI = new GerberInstance() { GerberPath = s };
-                    ThePanel.TheSet.Instances.Add(GI);
+                    ThePanel.theSet.Instances.Add(GI);
                     SelectedInstance = GI;
                 }
-                TV.BuildTree(this, ThePanel.TheSet);
+                TV.BuildTree(this, ThePanel.theSet);
                 Redraw(true);
             }
         }
 
-        private void mergeOverlappingBreaktabsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MergeOverlappingBreaktabsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThePanel.MergeOverlappingTabs();
             Redraw(true);
@@ -844,13 +831,13 @@ namespace GerberCombinerBuilder
             Redraw(true);
         }
 
-        private void zoomToFitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ZoomToFitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ZoomToFit();
             Redraw(false);
         }
 
-        private void scale11ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Scale11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Zoom1to1();
             Redraw(false);
@@ -865,8 +852,8 @@ namespace GerberCombinerBuilder
                     var dx = g.DpiX;
                     var dy = g.DpiY;
                     Zoom = 1 * dx / 25.4;
-                    CenterPoint.X = ThePanel.TheSet.Width / 2;
-                    CenterPoint.Y = ThePanel.TheSet.Height / 2;
+                    CenterPoint.X = ThePanel.theSet.Width / 2;
+                    CenterPoint.Y = ThePanel.theSet.Height / 2;
                 }
                 catch (Exception)
                 {
@@ -876,23 +863,23 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        private void VScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
             //Console.Write("newval: {0}", vScrollBar1.Value);
 
-            CenterPoint.Y = -vScrollBar1.Value + (vScrollBar1.Maximum / 2) + ThePanel.TheSet.Height / 2;
+            CenterPoint.Y = -vScrollBar1.Value + (vScrollBar1.Maximum / 2) + ThePanel.theSet.Height / 2;
             Redraw(false);
 
         }
 
-        private void hScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        private void HScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
             //  Console.Write("newval: {0}", hScrollBar1.Value);
-            CenterPoint.X = hScrollBar1.Value - (hScrollBar1.Maximum / 2) + ThePanel.TheSet.Width / 2;
+            CenterPoint.X = hScrollBar1.Value - (hScrollBar1.Maximum / 2) + ThePanel.theSet.Width / 2;
             Redraw(false);
         }
 
-        private void generateSilkscreenLayerOffsetArtToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GenerateSilkscreenLayerOffsetArtToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -902,7 +889,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void glControl1_KeyDown(object sender, KeyEventArgs e)
+        private void GlControl1_KeyDown(object sender, KeyEventArgs e)
         {            
             switch (e.KeyCode)
             {
@@ -959,7 +946,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void generateArtOffsetCurvesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GenerateArtOffsetCurvesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -969,7 +956,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void generateArtFieldLinesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GenerateArtFieldLinesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -980,12 +967,12 @@ namespace GerberCombinerBuilder
 
         }
 
-        private void addInstanceToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AddInstanceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ZoomToFit();
         }
 
-        private void generateArtReactedBlobsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GenerateArtReactedBlobsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -995,7 +982,7 @@ namespace GerberCombinerBuilder
             }
         }
 
-        private void generateArtPrototypeStripToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GenerateArtPrototypeStripToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedInstance == null) return;
             if (SelectedInstance.GetType() == typeof(GerberInstance))
@@ -1004,8 +991,6 @@ namespace GerberCombinerBuilder
                 GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.PrototypeEdge);
             }
         }
-
-       
 
         private void ProcessButton_Click_1(object sender, EventArgs e)
         {

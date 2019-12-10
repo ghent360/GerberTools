@@ -114,21 +114,21 @@
             this.naiveRectanglePackerToolStripMenuItem.Name = "naiveRectanglePackerToolStripMenuItem";
             this.naiveRectanglePackerToolStripMenuItem.Size = new System.Drawing.Size(217, 26);
             this.naiveRectanglePackerToolStripMenuItem.Text = "Autopack: Naive";
-            this.naiveRectanglePackerToolStripMenuItem.Click += new System.EventHandler(this.naiveRectanglePackerToolStripMenuItem_Click);
+            this.naiveRectanglePackerToolStripMenuItem.Click += new System.EventHandler(this.NaiveRectanglePackerToolStripMenuItem_Click);
             // 
             // maxRectsToolStripMenuItem
             // 
             this.maxRectsToolStripMenuItem.Name = "maxRectsToolStripMenuItem";
             this.maxRectsToolStripMenuItem.Size = new System.Drawing.Size(217, 26);
             this.maxRectsToolStripMenuItem.Text = "Autopack: MaxRects";
-            this.maxRectsToolStripMenuItem.Click += new System.EventHandler(this.maxRectsToolStripMenuItem_Click);
+            this.maxRectsToolStripMenuItem.Click += new System.EventHandler(this.MaxRectsToolStripMenuItem_Click);
             // 
             // addGerberFolderToolStripMenuItem1
             // 
             this.addGerberFolderToolStripMenuItem1.Name = "addGerberFolderToolStripMenuItem1";
             this.addGerberFolderToolStripMenuItem1.Size = new System.Drawing.Size(217, 26);
             this.addGerberFolderToolStripMenuItem1.Text = "Add Gerber Folder";
-            this.addGerberFolderToolStripMenuItem1.Click += new System.EventHandler(this.addGerberFolderToolStripMenuItem1_Click);
+            this.addGerberFolderToolStripMenuItem1.Click += new System.EventHandler(this.AddGerberFolderToolStripMenuItem1_Click);
             // 
             // breaktabsToolStripMenuItem
             // 
@@ -146,35 +146,35 @@
             this.insertBoardJoinToolStripMenuItem.Name = "insertBoardJoinToolStripMenuItem";
             this.insertBoardJoinToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
             this.insertBoardJoinToolStripMenuItem.Text = "Insert Breaktab";
-            this.insertBoardJoinToolStripMenuItem.Click += new System.EventHandler(this.insertBoardJoinToolStripMenuItem_Click_1);
+            this.insertBoardJoinToolStripMenuItem.Click += new System.EventHandler(this.InsertBoardJoinToolStripMenuItem_Click_1);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(291, 26);
             this.toolStripMenuItem1.Text = "Create Breaktabs";
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.ToolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.Size = new System.Drawing.Size(291, 26);
             this.toolStripMenuItem2.Text = "Delete all Breaktabs";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.ToolStripMenuItem2_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(291, 26);
             this.toolStripMenuItem3.Text = "Delete all Breaktabs with errors";
-            this.toolStripMenuItem3.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
+            this.toolStripMenuItem3.Click += new System.EventHandler(this.ToolStripMenuItem3_Click);
             // 
             // panelPropertiesToolStripMenuItem
             // 
             this.panelPropertiesToolStripMenuItem.Name = "panelPropertiesToolStripMenuItem";
             this.panelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(127, 24);
             this.panelPropertiesToolStripMenuItem.Text = "Panel Properties";
-            this.panelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.panelPropertiesToolStripMenuItem_Click);
+            this.panelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.PanelPropertiesToolStripMenuItem_Click);
             // 
             // viewToolStripMenuItem
             // 
@@ -190,14 +190,14 @@
             this.zoomToFitToolStripMenuItem.Name = "zoomToFitToolStripMenuItem";
             this.zoomToFitToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
             this.zoomToFitToolStripMenuItem.Text = "Zoom to fit";
-            this.zoomToFitToolStripMenuItem.Click += new System.EventHandler(this.zoomToFitToolStripMenuItem_Click);
+            this.zoomToFitToolStripMenuItem.Click += new System.EventHandler(this.ZoomToFitToolStripMenuItem_Click);
             // 
             // scale11ToolStripMenuItem
             // 
             this.scale11ToolStripMenuItem.Name = "scale11ToolStripMenuItem";
             this.scale11ToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
             this.scale11ToolStripMenuItem.Text = "Scale 1:1";
-            this.scale11ToolStripMenuItem.Click += new System.EventHandler(this.scale11ToolStripMenuItem_Click);
+            this.scale11ToolStripMenuItem.Click += new System.EventHandler(this.Scale11ToolStripMenuItem_Click);
             // 
             // ProcessButton
             // 
@@ -238,14 +238,14 @@
             this.addInstanceToolStripMenuItem.Name = "addInstanceToolStripMenuItem";
             this.addInstanceToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
             this.addInstanceToolStripMenuItem.Text = "Add Instance";
-            this.addInstanceToolStripMenuItem.Click += new System.EventHandler(this.addInstanceToolStripMenuItem_Click);
+            this.addInstanceToolStripMenuItem.Click += new System.EventHandler(this.AddInstanceToolStripMenuItem_Click);
             // 
             // addBreakTabToolStripMenuItem
             // 
             this.addBreakTabToolStripMenuItem.Name = "addBreakTabToolStripMenuItem";
             this.addBreakTabToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
             this.addBreakTabToolStripMenuItem.Text = "Add Breaktab";
-            this.addBreakTabToolStripMenuItem.Click += new System.EventHandler(this.addBreakTabToolStripMenuItem_Click);
+            this.addBreakTabToolStripMenuItem.Click += new System.EventHandler(this.AddBreakTabToolStripMenuItem_Click);
             // 
             // contextMenuStrip2
             // 
@@ -266,49 +266,49 @@
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.deleteToolStripMenuItem.Text = "Delete";
-            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
             // exportBoardImageToolStripMenuItem
             // 
             this.exportBoardImageToolStripMenuItem.Name = "exportBoardImageToolStripMenuItem";
             this.exportBoardImageToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.exportBoardImageToolStripMenuItem.Text = "Export Board Image";
-            this.exportBoardImageToolStripMenuItem.Click += new System.EventHandler(this.exportBoardImageToolStripMenuItem_Click);
+            this.exportBoardImageToolStripMenuItem.Click += new System.EventHandler(this.ExportBoardImageToolStripMenuItem_Click);
             // 
             // generateSilkscreenLayerOffsetArtToolStripMenuItem
             // 
             this.generateSilkscreenLayerOffsetArtToolStripMenuItem.Name = "generateSilkscreenLayerOffsetArtToolStripMenuItem";
             this.generateSilkscreenLayerOffsetArtToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateSilkscreenLayerOffsetArtToolStripMenuItem.Text = "Generate Art: CheckerField";
-            this.generateSilkscreenLayerOffsetArtToolStripMenuItem.Click += new System.EventHandler(this.generateSilkscreenLayerOffsetArtToolStripMenuItem_Click);
+            this.generateSilkscreenLayerOffsetArtToolStripMenuItem.Click += new System.EventHandler(this.GenerateSilkscreenLayerOffsetArtToolStripMenuItem_Click);
             // 
             // generateArtOffsetCurvesToolStripMenuItem
             // 
             this.generateArtOffsetCurvesToolStripMenuItem.Name = "generateArtOffsetCurvesToolStripMenuItem";
             this.generateArtOffsetCurvesToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateArtOffsetCurvesToolStripMenuItem.Text = "Generate Art: OffsetCurves";
-            this.generateArtOffsetCurvesToolStripMenuItem.Click += new System.EventHandler(this.generateArtOffsetCurvesToolStripMenuItem_Click);
+            this.generateArtOffsetCurvesToolStripMenuItem.Click += new System.EventHandler(this.GenerateArtOffsetCurvesToolStripMenuItem_Click);
             // 
             // generateArtFieldLinesToolStripMenuItem
             // 
             this.generateArtFieldLinesToolStripMenuItem.Name = "generateArtFieldLinesToolStripMenuItem";
             this.generateArtFieldLinesToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateArtFieldLinesToolStripMenuItem.Text = "Generate Art: FieldLines";
-            this.generateArtFieldLinesToolStripMenuItem.Click += new System.EventHandler(this.generateArtFieldLinesToolStripMenuItem_Click);
+            this.generateArtFieldLinesToolStripMenuItem.Click += new System.EventHandler(this.GenerateArtFieldLinesToolStripMenuItem_Click);
             // 
             // generateArtReactedBlobsToolStripMenuItem
             // 
             this.generateArtReactedBlobsToolStripMenuItem.Name = "generateArtReactedBlobsToolStripMenuItem";
             this.generateArtReactedBlobsToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateArtReactedBlobsToolStripMenuItem.Text = "Generate Art: Reacted Blobs";
-            this.generateArtReactedBlobsToolStripMenuItem.Click += new System.EventHandler(this.generateArtReactedBlobsToolStripMenuItem_Click);
+            this.generateArtReactedBlobsToolStripMenuItem.Click += new System.EventHandler(this.GenerateArtReactedBlobsToolStripMenuItem_Click);
             // 
             // generateArtPrototypeStripToolStripMenuItem
             // 
             this.generateArtPrototypeStripToolStripMenuItem.Name = "generateArtPrototypeStripToolStripMenuItem";
             this.generateArtPrototypeStripToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateArtPrototypeStripToolStripMenuItem.Text = "Generate Art: Prototype Strip";
-            this.generateArtPrototypeStripToolStripMenuItem.Click += new System.EventHandler(this.generateArtPrototypeStripToolStripMenuItem_Click);
+            this.generateArtPrototypeStripToolStripMenuItem.Click += new System.EventHandler(this.GenerateArtPrototypeStripToolStripMenuItem_Click);
             // 
             // statusStrip1
             // 
@@ -336,13 +336,13 @@
             this.glControl1.Size = new System.Drawing.Size(632, 295);
             this.glControl1.TabIndex = 5;
             this.glControl1.VSync = false;
-            this.glControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.glControl1_DragDrop);
-            this.glControl1.DragEnter += new System.Windows.Forms.DragEventHandler(this.glControl1_DragEnter);
-            this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
-            this.glControl1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControl1_KeyDown);
-            this.glControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseDown);
-            this.glControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseMove);
-            this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseUp);
+            this.glControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.GlControl1_DragDrop);
+            this.glControl1.DragEnter += new System.Windows.Forms.DragEventHandler(this.GlControl1_DragEnter);
+            this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.GlControl1_Paint);
+            this.glControl1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GlControl1_KeyDown);
+            this.glControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GlControl1_MouseDown);
+            this.glControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GlControl1_MouseMove);
+            this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GlControl1_MouseUp);
             // 
             // vScrollBar1
             // 
@@ -351,7 +351,7 @@
             this.vScrollBar1.Name = "vScrollBar1";
             this.vScrollBar1.Size = new System.Drawing.Size(21, 295);
             this.vScrollBar1.TabIndex = 6;
-            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
+            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.VScrollBar1_Scroll);
             // 
             // hScrollBar1
             // 
@@ -360,7 +360,7 @@
             this.hScrollBar1.Name = "hScrollBar1";
             this.hScrollBar1.Size = new System.Drawing.Size(611, 21);
             this.hScrollBar1.TabIndex = 7;
-            this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
+            this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.HScrollBar1_Scroll);
             // 
             // RotateRightHover
             // 
@@ -403,35 +403,35 @@
             this.milToolStripMenuItem1.Name = "milToolStripMenuItem1";
             this.milToolStripMenuItem1.Size = new System.Drawing.Size(129, 26);
             this.milToolStripMenuItem1.Text = "50mil";
-            this.milToolStripMenuItem1.Click += new System.EventHandler(this.milToolStripMenuItem1_Click);
+            this.milToolStripMenuItem1.Click += new System.EventHandler(this.MilToolStripMenuItem1_Click);
             // 
             // milToolStripMenuItem
             // 
             this.milToolStripMenuItem.Name = "milToolStripMenuItem";
             this.milToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.milToolStripMenuItem.Text = "100mil";
-            this.milToolStripMenuItem.Click += new System.EventHandler(this.milToolStripMenuItem_Click);
+            this.milToolStripMenuItem.Click += new System.EventHandler(this.MilToolStripMenuItem_Click);
             // 
             // mmToolStripMenuItem1
             // 
             this.mmToolStripMenuItem1.Name = "mmToolStripMenuItem1";
             this.mmToolStripMenuItem1.Size = new System.Drawing.Size(129, 26);
             this.mmToolStripMenuItem1.Text = "0.5mm";
-            this.mmToolStripMenuItem1.Click += new System.EventHandler(this.mmToolStripMenuItem1_Click);
+            this.mmToolStripMenuItem1.Click += new System.EventHandler(this.MmToolStripMenuItem1_Click);
             // 
             // mmToolStripMenuItem
             // 
             this.mmToolStripMenuItem.Name = "mmToolStripMenuItem";
             this.mmToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.mmToolStripMenuItem.Text = "1mm";
-            this.mmToolStripMenuItem.Click += new System.EventHandler(this.mmToolStripMenuItem_Click);
+            this.mmToolStripMenuItem.Click += new System.EventHandler(this.MmToolStripMenuItem_Click);
             // 
             // offToolStripMenuItem
             // 
             this.offToolStripMenuItem.Name = "offToolStripMenuItem";
             this.offToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.offToolStripMenuItem.Text = "Off";
-            this.offToolStripMenuItem.Click += new System.EventHandler(this.offToolStripMenuItem_Click);
+            this.offToolStripMenuItem.Click += new System.EventHandler(this.OffToolStripMenuItem_Click);
             // 
             // GerberPanelize
             // 

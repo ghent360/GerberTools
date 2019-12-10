@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Progress : Form, GerberLibrary.ProgressLog
+    public partial class Progress : Form, GerberLibrary.IProgressLog
     {
         private List<string> Files;
 

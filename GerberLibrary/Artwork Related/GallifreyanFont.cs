@@ -8,218 +8,222 @@ using System.Threading.Tasks;
 
 namespace GerberLibrary
 {
-    public class GallifreyanFont
+    public enum CAPSHAPE
     {
+        SQUARE,
+        ROUND
+    }
 
-        public interface IGraphicsInterface
+    public interface IGraphicsInterface
+    {
+        void stroke(Color strokecol);
+        void strokeWeight(double p);
+        void strokeCap(CAPSHAPE cAPSHAPE);
+        void arc(double nX, double nY, double p1, double p2, double arcStart, double arcEnd);
+        void line(double x1, double y1, double x2, double y2);
+        void noFill();
+
+        void ellipse(double x, double y, double w, double h);
+
+        void fill(Color fg);
+
+        void noStroke();
+
+    }
+
+    public class GerberWriter : IGraphicsInterface
+    {
+        bool DoFill = false;
+        bool DoStroke = true;
+        GerberLibrary.GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
+        CAPSHAPE CurrentShape = CAPSHAPE.ROUND;
+        double strokewidth = 0.1;
+
+        public GerberWriter()
         {
-            void stroke(Color strokecol);
-            void strokeWeight(double p);
-            void strokeCap(CAPSHAPE cAPSHAPE);
-            void arc(double nX, double nY, double p1, double p2, double start, double end);
-            void line(double x1, double y1, double x2, double y2);
-            void noFill();
-
-            void ellipse(double x, double y, double w, double h);
-
-            void fill(Color fg);
-
-            void noStroke();
 
         }
 
-        public class GerberWriter:IGraphicsInterface
+        public void stroke(Color strokecol)
         {
-            bool DoFill = false;
-            bool DoStroke = true;
-            GerberLibrary.GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
-
-            CAPSHAPE CurrentShape = CAPSHAPE.ROUND;
-            double strokewidth = 0.1;
-
-            public GerberWriter()
-            {
-
-            }
-
-            public void stroke(Color strokecol)
-            {
-                DoStroke = true;
-            }
-
-            public void strokeWeight(double p)
-            {
-                strokewidth = p*0.25 * 4.0;
-            }
-
-            public void strokeCap(CAPSHAPE cAPSHAPE)
-            {
-                CurrentShape = cAPSHAPE;
-            }
-
-            public void arc(double nX, double nY, double p1, double p2, double start, double end)
-            {
-                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
-                PL.AddArc(nX, nY, p1, p2, start, end);
-                GAW.AddPolyLine(PL, strokewidth);
-            }
-
-            public void line(double x1, double y1, double x2, double y2)
-            {
-                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
-                PL.Add(x1, y1);
-                PL.Add(x2, y2);
-                GAW.AddPolyLine(PL, strokewidth);
-
-            }
-
-            public void noFill()
-            {
-                DoFill = false;
-            }
-
-            public void ellipse(double x, double y, double w, double h)
-            {
-                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
-                PL.AddEllipse(x,y,w,h); 
-
-
-                if (DoStroke) GAW.AddPolyLine(PL, strokewidth);
-                if (DoFill) GAW.AddPolygon(PL);
-            }
-
-            public void fill(Color fg)
-            {
-                DoFill = true;                
-            }
-
-            public void noStroke()
-            {
-                DoStroke = false;
-            }
-
-            public void Write(string filename)
-            {
-                GAW.Write(filename);
-            }
+            DoStroke = true;
         }
 
-        public class GraphicsWriter: IGraphicsInterface
+        public void strokeWeight(double p)
         {
-            bool DoFill = false;
-            bool DoStroke = true;
-            CAPSHAPE CurrentShape = CAPSHAPE.ROUND;
-            double strokewidth = 1;
+            strokewidth = p * 0.25 * 4.0;
+        }
 
-            public void noFill()
-            {
-                DoFill = false;
-            }
+        public void strokeCap(CAPSHAPE cAPSHAPE)
+        {
+            CurrentShape = cAPSHAPE;
+        }
 
-            public void ellipse(double x, double y, double w, double h)
-            {
-                x -= w / 2;
-                y -= h / 2;
-                if (DoFill)
-                {
-                    using (SolidBrush br = new SolidBrush(sfg))
-                    this.G.FillEllipse(br, (float)x, (float)y, (float)w, (float)h);
-                    if (DoStroke)
-                    {
-                        using (Pen p = GetPen())
-                            this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
-                    }
-                }
-                else
-                {
-                    if (DoStroke)
-                    {
-                        using (Pen p = GetPen())
-                            this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
-                    }
-                }
-            }
+        public void arc(double nX, double nY, double p1, double p2, double arcStart, double arcEnd)
+        {
+            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
+            PL.AddArc(nX, nY, p1, p2, arcStart, arcEnd);
+            GAW.AddPolyLine(PL, strokewidth);
+        }
 
-            public void fill(Color fg)
-            {
-                ffg = fg;
-                DoFill = true;
-            }
+        public void line(double x1, double y1, double x2, double y2)
+        {
+            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
+            PL.Add(x1, y1);
+            PL.Add(x2, y2);
+            GAW.AddPolyLine(PL, strokewidth);
 
-            public void noStroke()
-            {
-                DoStroke = false;
-            }
+        }
+
+        public void noFill()
+        {
+            DoFill = false;
+        }
+
+        public void ellipse(double x, double y, double w, double h)
+        {
+            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
+            PL.AddEllipse(x, y, w, h);
 
 
-            System.Drawing.Color sfg = Color.Black;
-            System.Drawing.Color ffg = Color.Blue;
-            //System.Drawing.Color sbg = Color.White;        
+            if (DoStroke) GAW.AddPolyLine(PL, strokewidth);
+            if (DoFill) GAW.AddPolygon(PL);
+        }
 
+        public void fill(Color fg)
+        {
+            DoFill = true;
+        }
 
-            public Graphics G;
+        public void noStroke()
+        {
+            DoStroke = false;
+        }
 
-            public GraphicsWriter(Graphics G)
-            {
-                this.G = G;
-                if (this.G != null)
-                    this.G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            }
-            public void strokeCap(CAPSHAPE cAPSHAPE)
-            {
-                CurrentShape = cAPSHAPE;
-            }
+        public void Write(string filename)
+        {
+            GAW.Write(filename);
+        }
+    }
 
-            public void arc(double nX, double nY, double p1, double p2, double start, double end)
-            {
-                using (Pen p = GetPen())
-                {
-                    double sweep = end - start;
-                    this.G.DrawArc(p, new RectangleF(new PointF((float)(nX - p1 / 2), (float)(nY - p2 / 2)), new SizeF((float)p1, (float)p2)), (float)Conv(start), Conv(sweep));
-                }
-            }
+    public class GraphicsWriter : IGraphicsInterface
+    {
+        bool DoFill = false;
+        bool DoStroke = true;
+        CAPSHAPE CurrentShape = CAPSHAPE.ROUND;
+        double strokewidth = 1;
+        System.Drawing.Color sfg = Color.Black;
+        //System.Drawing.Color ffg = Color.Blue;
+        //System.Drawing.Color sbg = Color.White;        
+        public Graphics G;
 
-            public void line(double x1, double y1, double x2, double y2)
-            {
-                using (Pen p = GetPen())
-                {
-                    this.G.DrawLine(p, (float)x1, (float)y1, (float)x2, (float)y2);
-                }
-            }
+        public void noFill()
+        {
+            DoFill = false;
+        }
 
-            static public float Conv(double inp)
-            {
-                return (float)((inp / (Math.PI * 2)) * 360.0);
-            }
-
-            public Pen GetPen()
+        public void ellipse(double x, double y, double w, double h)
+        {
+            x -= w / 2;
+            y -= h / 2;
+            if (DoFill)
             {
                 using (SolidBrush br = new SolidBrush(sfg))
+                    this.G.FillEllipse(br, (float)x, (float)y, (float)w, (float)h);
+                if (DoStroke)
                 {
-                    var p = new Pen(br, (float)strokewidth);
-
-                    System.Drawing.Drawing2D.LineCap Cap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.LineCap.Round : System.Drawing.Drawing2D.LineCap.Square;
-                    System.Drawing.Drawing2D.DashCap DCap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.DashCap.Round : System.Drawing.Drawing2D.DashCap.Flat;
-                    p.SetLineCap(Cap, Cap, DCap);
-                    return p;
+                    using (Pen p = GetPen())
+                        this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
                 }
             }
-            public void stroke(Color strokecol)
+            else
             {
-                sfg = strokecol;
-                DoStroke = true;
-            }
-
-            public void strokeWeight(double p)
-            {
-                strokewidth = p;
+                if (DoStroke)
+                {
+                    using (Pen p = GetPen())
+                        this.G.DrawEllipse(p, (float)x, (float)y, (float)w, (float)h);
+                }
             }
         }
 
+        public void fill(Color fg)
+        {
+            //ffg = fg;
+            DoFill = true;
+        }
+
+        public void noStroke()
+        {
+            DoStroke = false;
+        }
+
+        public GraphicsWriter(Graphics G)
+        {
+            this.G = G;
+            if (this.G != null)
+                this.G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        }
+        public void strokeCap(CAPSHAPE cAPSHAPE)
+        {
+            CurrentShape = cAPSHAPE;
+        }
+
+        public void arc(double nX, double nY, double p1, double p2, double start, double end)
+        {
+            using (Pen p = GetPen())
+            {
+                double sweep = end - start;
+                this.G.DrawArc(p, new RectangleF(new PointF((float)(nX - p1 / 2), (float)(nY - p2 / 2)), new SizeF((float)p1, (float)p2)), (float)Conv(start), Conv(sweep));
+            }
+        }
+
+        public void line(double x1, double y1, double x2, double y2)
+        {
+            using (Pen p = GetPen())
+            {
+                this.G.DrawLine(p, (float)x1, (float)y1, (float)x2, (float)y2);
+            }
+        }
+
+        static public float Conv(double inp)
+        {
+            return (float)((inp / (Math.PI * 2)) * 360.0);
+        }
+
+        public Pen GetPen()
+        {
+            using (SolidBrush br = new SolidBrush(sfg))
+            {
+                var p = new Pen(br, (float)strokewidth);
+
+                System.Drawing.Drawing2D.LineCap Cap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.LineCap.Round : System.Drawing.Drawing2D.LineCap.Square;
+                System.Drawing.Drawing2D.DashCap DCap = CurrentShape == CAPSHAPE.ROUND ? System.Drawing.Drawing2D.DashCap.Round : System.Drawing.Drawing2D.DashCap.Flat;
+                p.SetLineCap(Cap, Cap, DCap);
+                return p;
+            }
+        }
+        public void stroke(Color strokecol)
+        {
+            sfg = strokecol;
+            DoStroke = true;
+        }
+
+        public void strokeWeight(double p)
+        {
+            strokewidth = p;
+        }
+    }
+
+    public class GallifreyanFont
+    {
+        Random R = new Random();
         IGraphicsInterface Target;
         System.Drawing.Color fg = Color.DarkBlue;
-        System.Drawing.Color bg = Color.White;        
-
+        System.Drawing.Color bg = Color.White;
+        double sentenceRadius = 256;
+        string english = "";
+        double double1 = 0;
+        double double2 = 0;
 
         public void DrawToInterface(IGraphicsInterface Gi, string S, double width, double height)
         {
@@ -242,12 +246,6 @@ namespace GerberLibrary
 
         }
         
-        public enum CAPSHAPE
-        {
-            SQUARE,
-            ROUND
-        }
-        Random R = new Random();
         double Random(double min, double max)
         {
             double rr = R.NextDouble();
@@ -258,7 +256,6 @@ namespace GerberLibrary
         {
             return R.Next(max);
         }
-
 
         static double Lerp(double a, double b, double c)
         {
@@ -283,9 +280,6 @@ namespace GerberLibrary
             return inp;
 
         }
-
-        double sentenceRadius = 256;
-        string english = "";
 
         void Transliterate(double width, double height)
         {
@@ -1164,9 +1158,6 @@ namespace GerberLibrary
         }
 
         
-        double double1 = 0;
-        double double2 = 0;
-
         void makeArcs(double mX, double mY, double nX, double nY, double r1, double r2, double begin, double end)
         {
             double theta;
@@ -1236,8 +1227,5 @@ namespace GerberLibrary
             double1 = omega + theta;
             double2 = omega - theta + Math.PI * 2.0;
         }
-
-       
-
     }
 }

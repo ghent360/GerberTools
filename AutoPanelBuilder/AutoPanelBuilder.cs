@@ -108,13 +108,13 @@ namespace AutoPanelBuilder
                 }
             }
 
-            GP.TheSet.Width = S.Width;
-            GP.TheSet.Height = S.Height;
-            GP.TheSet.MarginBetweenBoards = S.MarginBetweenBoards;
-            GP.TheSet.ConstructNegativePolygon = S.ConstructNegativePolygon;
-            GP.TheSet.FillOffset = S.FillOffset;
-            GP.TheSet.Smoothing= S.Smoothing;
-            GP.TheSet.ExtraTabDrillDistance = S.ExtraTabDrillDistance;
+            GP.theSet.Width = S.Width;
+            GP.theSet.Height = S.Height;
+            GP.theSet.MarginBetweenBoards = S.MarginBetweenBoards;
+            GP.theSet.ConstructNegativePolygon = S.ConstructNegativePolygon;
+            GP.theSet.FillOffset = S.FillOffset;
+            GP.theSet.Smoothing= S.Smoothing;
+            GP.theSet.ExtraTabDrillDistance = S.ExtraTabDrillDistance;
 
             if (GP.MaxRectPack(GerberLibrary.MaxRectPacker.FreeRectChoiceHeuristic.RectBestAreaFit, 0, true))
             {

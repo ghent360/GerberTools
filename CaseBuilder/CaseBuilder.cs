@@ -13,7 +13,7 @@ using System.IO;
 
 namespace CaseBuilder
 {
-    public partial class CaseBuilder : Form, ProgressLog
+    public partial class CaseBuilder : Form, IProgressLog
     {
         public CaseBuilder()
         {

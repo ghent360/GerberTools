@@ -9,7 +9,7 @@ using GerberLibrary.Core;
 
 namespace GerberCombiner
 {
-    class CombinerProgram: ProgressLog
+    class CombinerProgram: IProgressLog
     {
         static void Main(string[] args)
         {

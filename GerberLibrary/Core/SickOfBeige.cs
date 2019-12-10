@@ -30,7 +30,7 @@ namespace GerberLibrary.Core
         }
         public Dictionary<string, MemoryStream> Streams = new Dictionary<string, MemoryStream>();
 
-        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, ProgressLog Logger = null)
+        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, IProgressLog Logger = null)
         {
             foreach (var a in FileList)
             {
@@ -221,7 +221,7 @@ namespace GerberLibrary.Core
             return null;
         }
 
-        public void AddFileToSet(string aname, ProgressLog Logger, double drillscaler = 1.0)
+        public void AddFileToSet(string aname, IProgressLog Logger, double drillscaler = 1.0)
         {
             if (Streams.ContainsKey(aname))
             {
@@ -232,7 +232,7 @@ namespace GerberLibrary.Core
                 Logger.AddString(String.Format("[ERROR] no stream for {0}!!!", aname));
             }
         }
-        public void AddFileToSet(MemoryStream MS, string aname, ProgressLog Logger, double drillscaler = 1.0)
+        public void AddFileToSet(MemoryStream MS, string aname, IProgressLog Logger, double drillscaler = 1.0)
         {
 
             Streams[aname] = MS;
@@ -253,7 +253,7 @@ namespace GerberLibrary.Core
             }
             AddBoardToSet(MS, aname, zerowidth, precombine, drillscaler);
         }
-        public void CheckForOutlineFiles(ProgressLog Logger)
+        public void CheckForOutlineFiles(IProgressLog Logger)
         {
             List<ParsedGerber> Outlines = new List<ParsedGerber>();
             List<ParsedGerber> Mills = new List<ParsedGerber>();
@@ -325,7 +325,7 @@ namespace GerberLibrary.Core
             }
         }
 
-        public void CheckRelativeBoundingBoxes(ProgressLog Logger)
+        public void CheckRelativeBoundingBoxes(IProgressLog Logger)
         {
 
 
@@ -368,7 +368,7 @@ namespace GerberLibrary.Core
             }
 
         }
-        public void FixEagleDrillExportIssues(ProgressLog Logger)
+        public void FixEagleDrillExportIssues(IProgressLog Logger)
         {
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();

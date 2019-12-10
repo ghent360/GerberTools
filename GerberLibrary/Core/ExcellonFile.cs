@@ -40,7 +40,7 @@ namespace GerberLibrary
             ParseExcellon(lines, drillscaler);
         }
 
-        public static void MergeAll(List<string> Files, string output, ProgressLog Log)
+        public static void MergeAll(List<string> Files, string output, IProgressLog Log)
         {
             if (Files.Count >= 2)
             {
@@ -82,7 +82,7 @@ namespace GerberLibrary
             }
         }
 
-        private static void MultiMerge(string file1, List<string> otherfiles, string output, ProgressLog Log)
+        private static void MultiMerge(string file1, List<string> otherfiles, string output, IProgressLog Log)
         {
             if (File.Exists(file1) == false)
             {
@@ -156,7 +156,7 @@ namespace GerberLibrary
             return T;
         }
 
-        public static void Merge(string file1, string file2, string outputfile, ProgressLog Log)
+        public static void Merge(string file1, string file2, string outputfile, IProgressLog Log)
         {
             if (File.Exists(file1) == false)
             {
@@ -519,7 +519,7 @@ namespace GerberLibrary
         }
 
 
-        public static void WriteContainedOnly(string inputfile, PolyLine Boundary, string outputfilename, ProgressLog Log)
+        public static void WriteContainedOnly(string inputfile, PolyLine Boundary, string outputfilename, IProgressLog Log)
         {
             if (File.Exists(inputfile) == false)
             {
@@ -534,7 +534,7 @@ namespace GerberLibrary
 
         }
 
-        private void WriteContained(PolyLine boundary, string outputfilename, ProgressLog log)
+        private void WriteContained(PolyLine boundary, string outputfilename, IProgressLog log)
         {
             ExcellonFile Out = new ExcellonFile();
 
