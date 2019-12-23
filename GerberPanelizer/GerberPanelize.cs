@@ -281,7 +281,6 @@ namespace GerberCombinerBuilder
                 ParentFrame.Enabled = false;
                 ExportThread = new Thread(new ThreadStart(ExportThreadFunc));
                 ExportThread.Start();
-
             }
         }
 

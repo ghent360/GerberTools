@@ -1574,23 +1574,23 @@ namespace GerberLibrary
             return R;
         }
 
-        public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, IProgressLog Logger, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
+        public List<String> SaveGerbersToFolder(string baseName, string targetfolder, IProgressLog logger, bool saveOutline = true, bool generateImages = true, bool deleteGenerated = true, string combinedfilename = "combined")
         {
-            Logger.AddString("Starting export to " + targetfolder);
-            List<string> GeneratedFiles = theSet.SaveTo(targetfolder, gerberOutlines, Logger);
-            List<String> FinalFiles = new List<string>();
+            logger.AddString("Starting export to " + targetfolder);
+            List<string> generatedFiles = theSet.SaveTo(targetfolder, gerberOutlines, logger);
+            List<String> finalFiles = new List<string>();
 
-            if (SaveOutline)
+            if (saveOutline)
             {
-                GeneratedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename));
-                FinalFiles.Add(Path.Combine(targetfolder, combinedfilename + ".gko"));
+                generatedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename));
+                finalFiles.Add(Path.Combine(targetfolder, combinedfilename + ".gko"));
             }
 
             // TODO: use the new Gerber.DetermineFile to actually group based on layer/type instead of extentions only!
 
-            Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
-            Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
-            foreach (var s in GeneratedFiles)
+            Dictionary<string, List<string>> filesPerExt = new Dictionary<string, List<string>>();
+            Dictionary<string, BoardFileType> fileTypePerExt = new Dictionary<string, BoardFileType>();
+            foreach (var s in generatedFiles)
             {
                 string ext = Path.GetExtension(s).ToLower(); ;
                 if (ext == "xln") ext = "txt";
@@ -1599,43 +1599,57 @@ namespace GerberLibrary
                 if (theSet.MergeFileTypes)
                 {
                     BoardLayer layer;
-                    BoardSide Side;
+                    BoardSide side;
 
-                    Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
+                    Gerber.DetermineBoardSideAndLayer(s, out side, out layer);
 
-                    ext = String.Format(".{0}_{1}", layer, Side);
+                    ext = String.Format(".{0}_{1}", layer, side);
                 }
 
 
-                if (FilesPerExt.ContainsKey(ext) == false)
+                if (filesPerExt.ContainsKey(ext) == false)
                 {
-                    FilesPerExt[ext] = new List<string>();
+                    filesPerExt[ext] = new List<string>();
                 }
 
-                FileTypePerExt[ext] = Gerber.FindFileType(s);
-                FilesPerExt[ext].Add(s);
+                fileTypePerExt[ext] = Gerber.FindFileType(s);
+                filesPerExt[ext].Add(s);
             }
             int count = 0;
-            foreach (var a in FilesPerExt)
+            foreach (var a in filesPerExt)
             {
                 count++;
-                Logger.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)FilesPerExt.Keys.Count) * 0.5f + 0.3f);
-                switch (FileTypePerExt[a.Key])
+                logger.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)filesPerExt.Keys.Count) * 0.5f + 0.3f);
+                switch (fileTypePerExt[a.Key])
                 {
                     case BoardFileType.Drill:
                         {
-                            string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
-                            FinalFiles.Add(Filename);
-                            ExcellonFile.MergeAll(a.Value, Filename, Logger);
+                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            finalFiles.Add(filename);
+                            ExcellonFile.MergeAll(a.Value, filename, logger);
+                        }
+                        break;
+                    case BoardFileType.PlaceKicad:
+                        {
+                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            finalFiles.Add(filename);
+                            PositionFile.MergeAll(a.Value, filename, logger);
+                        }
+                        break;
+                    case BoardFileType.PlaceCsv:
+                        {
+                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            finalFiles.Add(filename);
+                            PositionFile.MergeAll(a.Value, filename, logger);
                         }
                         break;
                     case BoardFileType.Gerber:
                         {
                             if (a.Key.ToLower() != ".gko")
                             {
-                                string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
-                                FinalFiles.Add(Filename);
-                                GerberMerger.MergeAll(a.Value, Filename, Logger);
+                                string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                                finalFiles.Add(filename);
+                                GerberMerger.MergeAll(a.Value, filename, logger);
                             }
                         }
                         break;
@@ -1663,35 +1677,35 @@ namespace GerberLibrary
             //}
             //zip2.Dispose();
 
-            Logger.AddString("Deleting tempfiles", 0.9f);
+            logger.AddString("Deleting tempfiles", 0.9f);
 
-            if (DeleteGenerated)
+            if (deleteGenerated)
             {
-                foreach (var a in GeneratedFiles)
+                foreach (var a in generatedFiles)
                 {
                     File.Delete(a);
                 }
             }
 
-            if (GenerateImages)
+            if (generateImages)
             {
                 try
                 {
-                    Logger.AddString("Writing board bitmaps", 0.95f);
+                    logger.AddString("Writing board bitmaps", 0.95f);
                     GerberImageCreator GIC = new GerberImageCreator();
-                    GIC.AddBoardsToSet(FinalFiles);
+                    GIC.AddBoardsToSet(finalFiles);
 
-                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 400, Gerber.DirectlyShowGeneratedBoardImages, Logger);
+                    GIC.WriteImageFiles(Path.Combine(targetfolder, baseName), 400, Gerber.DirectlyShowGeneratedBoardImages, logger);
                 }
                 catch (Exception E)
                 {
-                    Logger.AddString("Some errors while exporting board images.. but this should be no problem?");
-                    Logger.AddString(String.Format("The exception: {0}", E.Message));
+                    logger.AddString("Some errors while exporting board images.. but this should be no problem?");
+                    logger.AddString(String.Format("The exception: {0}", E.Message));
                 }
             }
-            Logger.AddString("Done", 1);
+            logger.AddString("Done", 1);
 
-            return GeneratedFiles;
+            return generatedFiles;
         }
 
         public void SaveFile(string FileName)
@@ -2185,10 +2199,6 @@ namespace GerberLibrary
                                             UnzippedList.Add(Unzipped);
                                             e.Extract(FS);
                                             FS.Close();
-
-
-
-
                                         }
                                     }
                                 }
@@ -2196,7 +2206,6 @@ namespace GerberLibrary
                         }
 
                         instanceID = AddFilesForInstance(OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
-
 
                         instanceID++;
                     }
@@ -2235,8 +2244,6 @@ namespace GerberLibrary
             GerberImageCreator GIC = new GerberImageCreator();
             GIC.AddBoardsToSet(FileList);
 
-
-
             foreach (var f in FileList)
             {
                 var FileType = Gerber.FindFileType(f);
@@ -2244,7 +2251,6 @@ namespace GerberLibrary
                 switch (FileType)
                 {
                     case BoardFileType.Drill:
-
                         try
                         {
                             double scaler = GIC.GetDrillScaler(f);
@@ -2263,8 +2269,43 @@ namespace GerberLibrary
                             }
                         }
                         break;
+                    case BoardFileType.PlaceCsv:
+                        try
+                        {
+                            PositionFile pf = new PositionFile();
+                            pf.Load(f);
+                            string filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                            pf.WriteCsv(filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            GeneratedFiles.Add(filename);
+                        }
+                        catch (Exception E)
+                        {
+                            while (E != null)
+                            {
+                                Logger.AddString("Exception: " + E.Message);
+                                E = E.InnerException;
+                            }
+                        }
+                        break;
+                    case BoardFileType.PlaceKicad:
+                        try
+                        {
+                            PositionFile pf = new PositionFile();
+                            pf.Load(f);
+                            string filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                            pf.WriteKicad(filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            GeneratedFiles.Add(filename);
+                        }
+                        catch (Exception E)
+                        {
+                            while (E != null)
+                            {
+                                Logger.AddString("Exception: " + E.Message);
+                                E = E.InnerException;
+                            }
+                        }
+                        break;
                     case BoardFileType.Gerber:
-
                         try
                         {
                             string ext = Path.GetExtension(f).ToLower();

@@ -40,11 +40,11 @@ namespace GerberLibrary
             ParseExcellon(lines, drillscaler);
         }
 
-        public static void MergeAll(List<string> Files, string output, IProgressLog Log)
+        public static void MergeAll(List<string> Files, string output, IProgressLog log)
         {
             if (Files.Count >= 2)
             {
-                MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
+                MultiMerge(Files[0], Files.Skip(1).ToList(), output, log);
                 return;
 
             }
@@ -69,12 +69,12 @@ namespace GerberLibrary
             {
                 string NewFile = Path.GetTempFileName();
                 TempFiles.Add(NewFile);
-                Merge(LastFile, Files[i], NewFile, Log);
+                Merge(LastFile, Files[i], NewFile, log);
                 LastFile = NewFile;
             }
 
-            Merge(LastFile, Files.Last(), output, Log);
-            Log.AddString("Removing merge tempfiles");
+            Merge(LastFile, Files.Last(), output, log);
+            log.AddString("Removing merge tempfiles");
 
             foreach (string s in TempFiles)
             {
@@ -82,7 +82,7 @@ namespace GerberLibrary
             }
         }
 
-        private static void MultiMerge(string file1, List<string> otherfiles, string output, IProgressLog Log)
+        private static void MultiMerge(string file1, List<string> otherfiles, string output, IProgressLog log)
         {
             if (File.Exists(file1) == false)
             {
@@ -99,32 +99,32 @@ namespace GerberLibrary
             }
 
             Console.WriteLine("*** Reading {0}:", file1);
-            ExcellonFile File1Parsed = new ExcellonFile();
-            File1Parsed.Load(file1);
-            List<ExcellonFile> OtherFilesParsed = new List<ExcellonFile>();
+            ExcellonFile file1Parsed = new ExcellonFile();
+            file1Parsed.Load(file1);
+            List<ExcellonFile> otherFilesParsed = new List<ExcellonFile>();
             foreach (var otherfile in otherfiles)
             {
 
                 Console.WriteLine("*** Reading {0}:", otherfile);
-                ExcellonFile OtherFileParsed = new ExcellonFile();
-                OtherFileParsed.Load(otherfile);
-                OtherFilesParsed.Add(OtherFileParsed);
+                ExcellonFile otherFileParsed = new ExcellonFile();
+                otherFileParsed.Load(otherfile);
+                otherFilesParsed.Add(otherFileParsed);
             }
-            int MaxID = 0;
-            foreach (var D in File1Parsed.Tools)
+            int maxID = 0;
+            foreach (var D in file1Parsed.Tools)
             {
-                if (D.Value.ID > MaxID) MaxID = D.Value.ID + 1;
+                if (D.Value.ID > maxID) maxID = D.Value.ID + 1;
             }
-            foreach (var F in OtherFilesParsed)
+            foreach (var F in otherFilesParsed)
             {
                 foreach (var D in F.Tools)
                 {
-                    File1Parsed.AddToolWithHoles(D.Value); ;
-                    //                D.Value.ID += MaxID;
-                    //              File1Parsed.Tools[D.Value.ID] = D.Value;
+                    file1Parsed.AddToolWithHoles(D.Value); ;
+                    // D.Value.ID += MaxID;
+                    // File1Parsed.Tools[D.Value.ID] = D.Value;
                 }
             }
-            File1Parsed.Write(output, 0, 0, 0, 0);
+            file1Parsed.Write(output, 0, 0, 0, 0);
         }
 
         private void AddToolWithHoles(ExcellonTool d)
@@ -156,7 +156,7 @@ namespace GerberLibrary
             return T;
         }
 
-        public static void Merge(string file1, string file2, string outputfile, IProgressLog Log)
+        public static void Merge(string file1, string file2, string outputfile, IProgressLog log)
         {
             if (File.Exists(file1) == false)
             {
@@ -168,28 +168,28 @@ namespace GerberLibrary
                 Console.WriteLine("{0} not found! stopping process!", file2);
                 return;
             }
-            Log.AddString(String.Format("*** Merging {0} with {1}", file1, file2));
+            log.AddString(String.Format("*** Merging {0} with {1}", file1, file2));
 
             Console.WriteLine("*** Reading {0}:", file1);
-            ExcellonFile File1Parsed = new ExcellonFile();
-            File1Parsed.Load(file1);
+            ExcellonFile file1Parsed = new ExcellonFile();
+            file1Parsed.Load(file1);
             Console.WriteLine("*** Reading {0}:", file2);
-            ExcellonFile File2Parsed = new ExcellonFile();
-            File2Parsed.Load(file2);
+            ExcellonFile file2Parsed = new ExcellonFile();
+            file2Parsed.Load(file2);
 
             int MaxID = 0;
-            foreach (var D in File1Parsed.Tools)
+            foreach (var D in file1Parsed.Tools)
             {
                 if (D.Value.ID > MaxID) MaxID = D.Value.ID + 1;
             }
 
-            foreach (var D in File2Parsed.Tools)
+            foreach (var D in file2Parsed.Tools)
             {
                 D.Value.ID += MaxID;
-                File1Parsed.Tools[D.Value.ID] = D.Value;
+                file1Parsed.Tools[D.Value.ID] = D.Value;
             }
 
-            File1Parsed.Write(outputfile, 0, 0, 0, 0);
+            file1Parsed.Write(outputfile, 0, 0, 0, 0);
         }
 
         public void Write(string filename, double DX, double DY, double DXp, double DYp, double AngleInDeg = 0)
