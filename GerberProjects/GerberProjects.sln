@@ -80,8 +80,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TINRS-ArtWorkGenerator", "..\TINRS-ArtWorkGenerator\TINRS-ArtWorkGenerator.csproj", "{6DE1B712-F0D4-4FE4-8E6F-50704FAC9EA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolderTool", "..\SolderTool\SolderTool.csproj", "{8DDC4C62-0407-48CC-9261-C1DA33040C93}"
-EndProjectProject("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PosFileTest", "PosFileTest\PosFileTest.csproj", "{12FF5E6A-0593-4ACF-8D09-831338C2CF52}"
-EndProjectGlobal
+EndProject
+Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
@@ -352,14 +352,7 @@ EndProjectGlobal
 		{8DDC4C62-0407-48CC-9261-C1DA33040C93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DDC4C62-0407-48CC-9261-C1DA33040C93}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8DDC4C62-0407-48CC-9261-C1DA33040C93}.Release|x86.ActiveCfg = Release|Any CPU
-		{8DDC4C62-0407-48CC-9261-C1DA33040C93}.Release|x86.Build.0 = Release|Any CPU		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Debug|x86.Build.0 = Debug|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Release|x86.ActiveCfg = Release|Any CPU
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52}.Release|x86.Build.0 = Release|Any CPU	EndGlobalSection
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -397,7 +390,6 @@ EndProjectGlobal
 		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 		{6DE1B712-F0D4-4FE4-8E6F-50704FAC9EA7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{8DDC4C62-0407-48CC-9261-C1DA33040C93} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
-		{12FF5E6A-0593-4ACF-8D09-831338C2CF52} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF204A88-D467-4D27-816B-E8B2C30CA74F}

@@ -821,7 +821,6 @@ namespace GerberLibrary.Core
                         }
                         else
                         {
-                            var S2 = Paths[S.PathID].Vertices[Paths[S.PathID].Vertices.Count - 2];
                             int idx = Paths[S.PathID].Vertices.Count - 2;
                             while (idx < 0) idx++;
                             var S2 = Paths[S.PathID].Vertices[idx];
