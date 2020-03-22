@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualBasic.FileIO;
 
 namespace GerberLibrary.Core
@@ -243,7 +244,14 @@ namespace GerberLibrary.Core
                 }
                 else
                 {
-                    designators[component.reference.name] = component.reference.sequence;
+                    if (component.reference.sequence < 0)
+                    {
+                        designators[component.reference.name] = 0;
+                    }
+                    else
+                    {
+                        designators[component.reference.name] = component.reference.sequence;
+                    }
                 }
             }
             return designators;
@@ -340,6 +348,340 @@ namespace GerberLibrary.Core
             {
                 result.WriteKicad(output);
             }
+        }
+    }
+
+    public class BOMLine : IEquatable<BOMLine>
+    {
+        public List<ComponentReference> designators;
+        public string value;
+        public string footprint;
+        public Dictionary<int, string> extraAttributes;
+
+        public static BOMLine parseCsv(string csvLine, int valueIdx, int designatorIdx, int footprintIdx)
+        {
+            BOMLine result = new BOMLine();
+            using (StringReader rdr = new StringReader(csvLine))
+            using (TextFieldParser csvParser = new TextFieldParser(rdr))
+            {
+                csvParser.CommentTokens = new string[] { "#" };
+                csvParser.SetDelimiters(new string[] { "," });
+                csvParser.HasFieldsEnclosedInQuotes = true;
+                string[] components = csvParser.ReadFields();
+                for (int idx = 0; idx < components.Length; idx++)
+                {
+                    if (idx == valueIdx)
+                    {
+                        result.value = components[idx];
+                    }
+                    else if (idx == footprintIdx)
+                    {
+                        result.footprint = components[idx];
+                    }
+                    else if (idx == designatorIdx)
+                    {
+                        result.designators = parseDesignators(components[idx]);
+                    }
+                    else
+                    {
+                        if (result.extraAttributes == null)
+                        {
+                            result.extraAttributes = new Dictionary<int, string>();
+                        }
+                        result.extraAttributes.Add(idx, components[idx]);
+                    }
+                }
+                return result;
+            }
+        }
+
+        private static List<ComponentReference> parseDesignators(string designators)
+        {
+            string[] elements = designators.Split(',');
+            List<ComponentReference> result = new List<ComponentReference>();
+            foreach (string component in elements)
+            {
+                result.Add(ComponentReference.parse(component));
+            }
+            return result;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as BOMLine);
+        }
+
+        public bool Equals(BOMLine other)
+        {
+            return other != null &&
+                   value == other.value &&
+                   footprint == other.footprint &&
+                   EqualityComparer<Dictionary<int, string>>.Default.Equals(extraAttributes, other.extraAttributes);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 1829165486;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(value);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(footprint);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<int, string>>.Default.GetHashCode(extraAttributes);
+            return hashCode;
+        }
+
+        public string ToCsv(int valueIdx, int designatorIdx, int footprintIdx)
+        {
+            int maxIdx = Math.Max(Math.Max(valueIdx, designatorIdx), footprintIdx);
+            foreach(var element in extraAttributes)
+            {
+                if (element.Key > maxIdx)
+                {
+                    maxIdx = element.Key;
+                }
+            }
+            StringBuilder result = new StringBuilder();
+            for (int idx = 0; idx <= maxIdx; idx++)
+            {
+                if (idx > 0) result.Append(",");
+                string s;
+                if (idx == valueIdx)
+                {
+                    s = value;
+                }
+                else if (idx == footprintIdx)
+                {
+                    s = footprint;
+                }
+                else if (idx == designatorIdx)
+                {
+                    s = printDesignators();
+                }
+                else
+                {
+                    s = extraAttributes[idx];
+                }
+
+                result.Append(String.Format(CultureInfo.InvariantCulture, "\"{0}\"", s));
+            }
+            return result.ToString();
+        }
+
+        private string printDesignators()
+        {
+            StringBuilder result = new StringBuilder();
+            bool first = true;
+            foreach(var d in designators)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result.Append(',');
+                }
+                result.Append(d.ToString());
+            }
+            return result.ToString();
+        }
+
+        public static bool operator ==(BOMLine left, BOMLine right)
+        {
+            return EqualityComparer<BOMLine>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(BOMLine left, BOMLine right)
+        {
+            return !(left == right);
+        }
+    }
+
+    public class BOMFile
+    {
+        private string[] header;
+        private int valueIdx = -1;
+        private int designatorIdx = -1;
+        private int footprintIdx = -1;
+        public readonly HashSet<BOMLine> components = new HashSet<BOMLine>();
+
+        public void Load(string filename)
+        {
+            var lines = File.ReadAllLines(filename);
+            ParseCsv(lines.ToList());
+        }
+
+        public void Load(StreamReader stream)
+        {
+            List<string> lines = new List<string>();
+            while (!stream.EndOfStream)
+            {
+                lines.Add(stream.ReadLine());
+            }
+            ParseCsv(lines);
+        }
+
+        private void ParseCsv(List<string> lines)
+        {
+            bool parseHeader = true;
+            foreach (string line in lines)
+            {
+                // Header is first line
+                if (parseHeader)
+                {
+                    using (StringReader rdr = new StringReader(line))
+                    using (TextFieldParser csvParser = new TextFieldParser(rdr))
+                    {
+                        csvParser.CommentTokens = new string[] { "#" };
+                        csvParser.SetDelimiters(new string[] { "," });
+                        csvParser.HasFieldsEnclosedInQuotes = false;
+                        header = csvParser.ReadFields();
+                        for (int idx = 0; idx < header.Length; idx++)
+                        {
+                            if (header[idx].CompareTo("Comment") == 0)
+                                valueIdx = idx;
+                            else if (header[idx].CompareTo("Designator") == 0)
+                                designatorIdx = idx;
+                            else if(header[idx].CompareTo("Footprint") == 0)
+                                footprintIdx = idx;
+                        }
+                        if (valueIdx < 0 || designatorIdx < 0 || footprintIdx < 0)
+                        {
+                            throw new InvalidOperationException("Could not locate Comment, Designator or Footprint");
+                        }
+                    }
+                    parseHeader = false;
+                    continue;
+                }
+                if (line.StartsWith("#"))
+                {
+                    // just a comment, ignore
+                    continue;
+                }
+                components.Add(BOMLine.parseCsv(line, valueIdx, designatorIdx, footprintIdx));
+            }
+        }
+
+        Dictionary<string, int> ComputeAllDesignators()
+        {
+            Dictionary<string, int> designators = new Dictionary<string, int>();
+            foreach (BOMLine component in components)
+            {
+                foreach (ComponentReference reference in component.designators)
+                {
+                    if (designators.ContainsKey(reference.name))
+                    {
+                        int maxValue = designators[reference.name];
+                        if (maxValue < reference.sequence)
+                        {
+                            designators[reference.name] = reference.sequence;
+                        }
+                    }
+                    else
+                    {
+                        if (reference.sequence < 0)
+                        {
+                            designators[reference.name] = 0;
+                        }
+                        else
+                        {
+                            designators[reference.name] = reference.sequence;
+                        }
+                    }
+                }
+            }
+            return designators;
+        }
+
+        // Update component references so there is no collision with the designators from
+        // another file.
+        List<BOMLine> UpdateReferences(Dictionary<string, int> designators)
+        {
+            List<BOMLine> result = new List<BOMLine>(components.Count);
+            foreach (BOMLine component in components)
+            {
+                BOMLine other = new BOMLine();
+                other.designators = new List<ComponentReference>();
+                other.value = component.value;
+                other.footprint = component.footprint;
+                other.extraAttributes = component.extraAttributes;
+                foreach (ComponentReference reference in component.designators)
+                {
+                    ComponentReference newReference = new ComponentReference();
+                    if (designators.ContainsKey(reference.name))
+                    {
+                        newReference.name = reference.name;
+                        newReference.sequence = reference.sequence + designators[reference.name] + 1;
+                    }
+                    else
+                    {
+                        newReference.name = reference.name;
+                        newReference.sequence = reference.sequence;
+                    }
+                    other.designators.Add(newReference);
+                }
+                result.Add(other);
+            }
+            return result;
+        }
+
+        public void WriteCsv(string output, double dx = 0, double dy = 0, double dxP = 0, double dyP = 0, double angleDeg = 0)
+        {
+            using (StreamWriter sw = new StreamWriter(output))
+                WriteCsv(sw);
+        }
+
+        private string printHeader()
+        {
+            StringBuilder result = new StringBuilder();
+            for (int idx = 0; idx < header.Length; idx++)
+            {
+                if (idx > 0)
+                {
+                    result.Append(", ");
+                }
+                result.Append(header[idx]);
+            }
+            return result.ToString();
+
+        }
+        public void WriteCsv(StreamWriter sw)
+        {
+            sw.WriteLine(printHeader());
+            foreach (BOMLine component in components)
+            {
+                sw.WriteLine(component.ToCsv(valueIdx, designatorIdx, footprintIdx));
+            }
+        }
+
+        public void Merge(BOMFile other)
+        {
+            List<BOMLine> updatedComponents = other.UpdateReferences(ComputeAllDesignators());
+            foreach (BOMLine element in updatedComponents)
+            {
+                BOMLine existingElement;
+                if (components.TryGetValue(element, out existingElement))
+                {
+                    existingElement.designators.AddRange(element.designators);
+                }
+                else
+                {
+                    components.Add(element);
+                }
+            }
+        }
+
+        public static void MergeAll(List<string> files, string output, IProgressLog log)
+        {
+            BOMFile result = new BOMFile();
+            foreach (string fileName in files)
+            {
+                BOMFile posFile = new BOMFile();
+                log.AddString(String.Format("Reading {0}", fileName));
+                posFile.Load(fileName);
+                log.AddString(String.Format("Merging {0}", fileName));
+                result.Merge(posFile);
+            }
+            log.AddString(String.Format("Writing {0}", output));
+            result.WriteCsv(output);
         }
     }
 }

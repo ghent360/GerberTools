@@ -61,6 +61,7 @@ namespace GerberLibrary.Core
         Drill,
         PlaceKicad,
         PlaceCsv,
+        KicadBOM,
         Unsupported
     }
 }

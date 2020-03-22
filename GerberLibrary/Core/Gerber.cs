@@ -688,6 +688,9 @@ namespace GerberLibrary
                         && L.Contains("Rot") 
                         && L.Contains("Side")) return BoardFileType.PlaceKicad;
                     if (L.Contains("Ref,Val,Package,PosX,PosY,Rot,Side")) return BoardFileType.PlaceCsv;
+                    if (L.Contains("Comment")
+                        && L.Contains("Designator")
+                        && L.Contains("Footprint")) return BoardFileType.KicadBOM;
                 };
             }
             catch (Exception E)

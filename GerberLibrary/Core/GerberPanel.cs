@@ -1643,6 +1643,13 @@ namespace GerberLibrary
                             PositionFile.MergeAll(a.Value, filename, logger);
                         }
                         break;
+                    case BoardFileType.KicadBOM:
+                        {
+                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            finalFiles.Add(filename);
+                            BOMFile.MergeAll(a.Value, filename, logger);
+                        }
+                        break;
                     case BoardFileType.Gerber:
                         {
                             if (a.Key.ToLower() != ".gko")
@@ -2305,6 +2312,25 @@ namespace GerberLibrary
                             }
                         }
                         break;
+                    case BoardFileType.KicadBOM:
+                        try
+                        {
+                            BOMFile pf = new BOMFile();
+                            pf.Load(f);
+                            string filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                            pf.WriteCsv(filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            GeneratedFiles.Add(filename);
+                        }
+                        catch (Exception E)
+                        {
+                            while (E != null)
+                            {
+                                Logger.AddString("Exception: " + E.Message);
+                                E = E.InnerException;
+                            }
+                        }
+                        break;
+
                     case BoardFileType.Gerber:
                         try
                         {
