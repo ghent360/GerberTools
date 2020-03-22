@@ -1606,13 +1606,18 @@ namespace GerberLibrary
                     ext = String.Format(".{0}_{1}", layer, side);
                 }
 
+                var fileType = Gerber.FindFileType(s);
+                if (fileType == BoardFileType.KicadBOM)
+                {
+                    ext = ".bom";
+                }
 
                 if (filesPerExt.ContainsKey(ext) == false)
                 {
                     filesPerExt[ext] = new List<string>();
                 }
 
-                fileTypePerExt[ext] = Gerber.FindFileType(s);
+                fileTypePerExt[ext] = fileType;
                 filesPerExt[ext].Add(s);
             }
             int count = 0;

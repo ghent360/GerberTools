@@ -415,8 +415,8 @@ namespace GerberLibrary.Core
         {
             return other != null &&
                    value == other.value &&
-                   footprint == other.footprint &&
-                   EqualityComparer<Dictionary<int, string>>.Default.Equals(extraAttributes, other.extraAttributes);
+                   footprint == other.footprint
+                   /*&& EqualityComparer<Dictionary<int, string>>.Default.Equals(extraAttributes, other.extraAttributes)*/;
         }
 
         public override int GetHashCode()
@@ -424,7 +424,7 @@ namespace GerberLibrary.Core
             int hashCode = 1829165486;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(value);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(footprint);
-            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<int, string>>.Default.GetHashCode(extraAttributes);
+            /*hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<int, string>>.Default.GetHashCode(extraAttributes);*/
             return hashCode;
         }
 
@@ -497,7 +497,7 @@ namespace GerberLibrary.Core
 
     public class BOMFile
     {
-        private string[] header;
+        private Dictionary<int, string> header = new Dictionary<int, string>();
         private int valueIdx = -1;
         private int designatorIdx = -1;
         private int footprintIdx = -1;
@@ -533,15 +533,16 @@ namespace GerberLibrary.Core
                         csvParser.CommentTokens = new string[] { "#" };
                         csvParser.SetDelimiters(new string[] { "," });
                         csvParser.HasFieldsEnclosedInQuotes = false;
-                        header = csvParser.ReadFields();
-                        for (int idx = 0; idx < header.Length; idx++)
+                        var headerColumns = csvParser.ReadFields();
+                        for (int idx = 0; idx < headerColumns.Length; idx++)
                         {
-                            if (header[idx].CompareTo("Comment") == 0)
+                            if (headerColumns[idx].CompareTo("Comment") == 0)
                                 valueIdx = idx;
-                            else if (header[idx].CompareTo("Designator") == 0)
+                            else if (headerColumns[idx].CompareTo("Designator") == 0)
                                 designatorIdx = idx;
-                            else if(header[idx].CompareTo("Footprint") == 0)
+                            else if(headerColumns[idx].CompareTo("Footprint") == 0)
                                 footprintIdx = idx;
+                            header.Add(idx, headerColumns[idx]);
                         }
                         if (valueIdx < 0 || designatorIdx < 0 || footprintIdx < 0)
                         {
@@ -632,7 +633,15 @@ namespace GerberLibrary.Core
         private string printHeader()
         {
             StringBuilder result = new StringBuilder();
-            for (int idx = 0; idx < header.Length; idx++)
+            int maxIdx = -1;
+            foreach (var element in header)
+            {
+                if (element.Key > maxIdx)
+                {
+                    maxIdx = element.Key;
+                }
+            }
+            for (int idx = 0; idx <= maxIdx; idx++)
             {
                 if (idx > 0)
                 {
@@ -667,18 +676,32 @@ namespace GerberLibrary.Core
                     components.Add(element);
                 }
             }
+            foreach (var h in other.header)
+            {
+                if (!header.ContainsKey(h.Key))
+                {
+                    header[h.Key] = h.Value;
+                }
+            }
         }
 
         public static void MergeAll(List<string> files, string output, IProgressLog log)
         {
-            BOMFile result = new BOMFile();
+            BOMFile result = null;
             foreach (string fileName in files)
             {
-                BOMFile posFile = new BOMFile();
+                BOMFile bomFile = new BOMFile();
                 log.AddString(String.Format("Reading {0}", fileName));
-                posFile.Load(fileName);
+                bomFile.Load(fileName);
                 log.AddString(String.Format("Merging {0}", fileName));
-                result.Merge(posFile);
+                if (result == null)
+                {
+                    result = bomFile;
+                }
+                else
+                {
+                    result.Merge(bomFile);
+                }
             }
             log.AddString(String.Format("Writing {0}", output));
             result.WriteCsv(output);
