@@ -1636,21 +1636,21 @@ namespace GerberLibrary
                         break;
                     case BoardFileType.PlaceKicad:
                         {
-                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            string filename = Path.Combine(targetfolder, combinedfilename + "-pos" + a.Key);
                             finalFiles.Add(filename);
                             PositionFile.MergeAll(a.Value, filename, logger);
                         }
                         break;
                     case BoardFileType.PlaceCsv:
                         {
-                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            string filename = Path.Combine(targetfolder, combinedfilename + "-pos.csv");
                             finalFiles.Add(filename);
                             PositionFile.MergeAll(a.Value, filename, logger);
                         }
                         break;
                     case BoardFileType.KicadBOM:
                         {
-                            string filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            string filename = Path.Combine(targetfolder, combinedfilename + "-bom.csv");
                             finalFiles.Add(filename);
                             BOMFile.MergeAll(a.Value, filename, logger);
                         }
